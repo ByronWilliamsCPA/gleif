@@ -1,0 +1,21 @@
+# Markdownlint configuration
+default: true
+
+# Line length - disabled (120 char flexibility for docs)
+MD013: false
+
+# Allow duplicate headings in different sections
+MD024:
+  siblings_only: true
+
+# Allow inline HTML
+MD033: true
+
+# First line heading - disabled
+MD041: false
+
+# Link fragments - disabled (reduces false positives)
+MD051: false
+
+# Multiple top-level headings - disabled
+MD025: false

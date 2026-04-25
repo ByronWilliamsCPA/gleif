@@ -1,0 +1,79 @@
+rules:
+  # SQL injection via string formatting in execute() calls
+  # Critical for DuckDB queries - always use parameterized queries ($1, $2)
+  - id: sql-injection-format-string
+    patterns:
+      - pattern-either:
+          - pattern: $CONN.execute(f"...", ...)
+          - pattern: $CONN.execute("..." % ..., ...)
+          - pattern: $CONN.execute("...".format(...), ...)
+    message: >
+      SQL query uses string formatting instead of parameterized queries.
+      Use DuckDB parameter placeholders ($1, $2) to prevent SQL injection.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+    paths:
+      exclude:
+        - tests/
+
+  # Hardcoded absolute paths
+  - id: hardcoded-absolute-path
+    pattern-regex: '["'']/(?:home|tmp|var|etc|usr)/\w+'
+    message: >
+      Hardcoded absolute path detected. Use Path.home(), tempfile, or
+      configuration variables instead.
+    languages: [python]
+    severity: INFO
+    paths:
+      exclude:
+        - tests/
+        - "*.md"
+
+  # Unsafe pickle deserialization
+  - id: unsafe-pickle-load
+    patterns:
+      - pattern-either:
+          - pattern: pickle.load(...)
+          - pattern: pickle.loads(...)
+    message: >
+      pickle.load/loads can execute arbitrary code. Use JSON or other
+      safe serialization formats.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-502: Deserialization of Untrusted Data"
+
+  # Subprocess with shell=True and formatted strings
+  - id: command-injection-subprocess
+    patterns:
+      - pattern: subprocess.$FUNC(..., shell=True, ...)
+    message: >
+      subprocess with shell=True is vulnerable to command injection.
+      Use shell=False with a list of arguments instead.
+    languages: [python]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-78: OS Command Injection"
+    paths:
+      exclude:
+        - tests/
+
+  # ZIP path traversal (relevant for GLEIF ZIP extraction)
+  - id: zip-path-traversal
+    patterns:
+      - pattern-either:
+          - pattern: zipfile.ZipFile(...).extractall(...)
+          - pattern: $ZIP.extractall(...)
+    message: >
+      ZipFile.extractall() can be vulnerable to path traversal (zip slip).
+      Validate member paths before extraction or extract individual files
+      with path validation.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-22: Path Traversal"
+    paths:
+      exclude:
+        - tests/

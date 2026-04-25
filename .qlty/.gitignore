@@ -1,0 +1,8 @@
+# Only commit configs, hooks, and qlty.toml
+*
+!.gitignore
+!qlty.toml
+!configs/
+!configs/**
+!hooks/
+!hooks/**

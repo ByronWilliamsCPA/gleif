@@ -1,0 +1,253 @@
+# GLEIF Golden Copy CLI - Security Analysis
+#
+# Centralized security scanning, separate from CI for performance (~5-8 min savings per PR).
+#
+# SCANS:
+#   - CodeQL: Python security-extended and quality queries
+#   - Dependency Review: PR-based dependency vulnerability detection
+#   - Bandit: Python static security analysis
+#   - OSV Scanner: Vulnerability detection (matches OpenSSF Scorecard)
+
+name: Security Analysis
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  schedule:
+    - cron: '30 2 * * 1'  # Weekly Monday 2:30 AM UTC
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  detect-changes:
+    name: Detect Security-Relevant Changes
+    runs-on: ubuntu-latest
+    outputs:
+      security_files: ${{ steps.filter.outputs.security }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Check for security-relevant file changes
+        id: filter
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        with:
+          filters: |
+            security:
+              - '**/*.py'
+              - '.github/workflows/security-analysis.yml'
+              - 'pyproject.toml'
+              - 'uv.lock'
+
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --no-dev
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.27.5
+        with:
+          languages: python
+          queries: security-extended,security-and-quality
+          config: |
+            paths:
+              - src
+            paths-ignore:
+              - tests
+
+      - name: Build CodeQL Database
+        uses: github/codeql-action/autobuild@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.27.5
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.27.5
+        with:
+          category: "/language:python"
+          upload: true
+
+  dependency-security:
+    name: Dependency Security Review
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      github.event_name == 'pull_request' &&
+      needs.detect-changes.outputs.security_files == 'true'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@4081bf99e2866ebe428fc0477b69eb4fcda7220a # v4.5.0
+        with:
+          fail-on-severity: moderate
+          license-check: true
+          comment-summary-in-pr: always
+          deny-licenses: GPL-2.0, GPL-3.0
+
+  security-scanning:
+    name: Bandit Security Scan
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.security_files == 'true'
+    timeout-minutes: 10
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Bandit Security Analysis
+        run: |
+          uv run pip install bandit
+          uv run bandit -r src -f json -o bandit-report.json || true
+          uv run bandit -r src || true
+
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: security-scan-reports
+          path: bandit-report.json
+
+  osv-scanner:
+    name: OSV Vulnerability Scanner
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.security_files == 'true'
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Run OSV Scanner
+        id: osv-scan
+        uses: google/osv-scanner-action/osv-scanner-action@9bb69575e74019c2ad085a1860787043adf47ccb # v2.2.4
+        with:
+          scan-args: |-
+            --lockfile=uv.lock
+            --format=json
+            --output=osv-results.json
+        continue-on-error: true
+
+      - name: Check OSV Results for HIGH/CRITICAL
+        run: |
+          if [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; then
+            echo "No OSV results file found or file is empty"
+            exit 0
+          fi
+
+          python3 << 'EOF'
+          import json, sys
+
+          with open('osv-results.json') as f:
+              results = json.load(f)
+
+          vulns = results.get('results', [])
+          if not vulns:
+              print('No vulnerabilities found')
+              sys.exit(0)
+
+          high_crit = []
+          for group in vulns:
+              for pkg in group.get('packages', []):
+                  for vuln in pkg.get('vulnerabilities', []):
+                      sev = (vuln.get('severity') or '').upper()
+                      if sev in ('HIGH', 'CRITICAL'):
+                          high_crit.append(f"{vuln.get('id', 'UNKNOWN')} ({sev})")
+
+          if high_crit:
+              print(f'Found {len(high_crit)} HIGH/CRITICAL vulnerabilities:')
+              for v in high_crit:
+                  print(f'  - {v}')
+              sys.exit(1)
+
+          print('No HIGH/CRITICAL vulnerabilities found')
+          EOF
+
+      - name: Upload OSV Scanner Report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: osv-scanner-results
+          path: osv-results.json
+          if-no-files-found: warn
+
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: [detect-changes, codeql-analysis, dependency-security, security-scanning, osv-scanner]
+    if: always()
+    steps:
+      - name: Security Gate Results
+        run: |
+          is_acceptable() {
+            [[ "$1" == "success" || "$1" == "skipped" ]]
+          }
+
+          if is_acceptable "${{ needs.codeql-analysis.result }}" && \
+             is_acceptable "${{ needs.dependency-security.result }}" && \
+             is_acceptable "${{ needs.security-scanning.result }}" && \
+             is_acceptable "${{ needs.osv-scanner.result }}"; then
+            echo "Security gate passed"
+          else
+            echo "Security gate failed"
+            echo "codeql: ${{ needs.codeql-analysis.result }}"
+            echo "dependency-security: ${{ needs.dependency-security.result }}"
+            echo "security-scanning: ${{ needs.security-scanning.result }}"
+            echo "osv-scanner: ${{ needs.osv-scanner.result }}"
+            exit 1
+          fi

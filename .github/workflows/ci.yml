@@ -1,0 +1,136 @@
+# GLEIF Golden Copy CLI - CI Pipeline
+#
+# CI FOCUS: Code Quality & Testing
+# This workflow handles code quality, formatting, type checking, and testing.
+# Security scanning is consolidated in security-analysis.yml.
+#
+# QUALITY CHECKS:
+#   - BasedPyright: Strict type checking
+#   - Ruff: Code formatting validation and linting
+#   - Pytest: Test suite with 80%+ coverage
+#
+# SECURITY SCANS (See security-analysis.yml):
+#   - Bandit: Python static security analysis
+#   - CodeQL: Advanced security analysis
+#   - Dependency Review: PR-based vulnerability detection
+
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  push:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_CACHE_DIR: ~/.cache/uv
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run test suite
+        run: |
+          uv run pytest -v \
+            --cov=gleif \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=80 \
+            --tb=short
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7 # v2.10.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Code formatting validation
+        run: uv run ruff format --check .
+
+      - name: Linting
+        run: uv run ruff check .
+
+      - name: Type checking (BasedPyright strict)
+        run: uv run basedpyright src
+
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    needs: [test, quality-checks]
+    if: always()
+    steps:
+      - name: Validate CI Results
+        run: |
+          if [[ "${{ needs.test.result }}" == "success" && \
+                "${{ needs.quality-checks.result }}" == "success" ]]; then
+            echo "CI Pipeline - All Checks Passed"
+          else
+            echo "CI Pipeline Failed"
+            echo "test: ${{ needs.test.result }}"
+            echo "quality-checks: ${{ needs.quality-checks.result }}"
+            exit 1
+          fi

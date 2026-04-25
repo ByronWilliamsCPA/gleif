@@ -1,0 +1,16 @@
+# Default owner for all files
+* @ByronWilliamsCPA
+
+# Source code
+/src/** @ByronWilliamsCPA
+
+# Tests
+/tests/** @ByronWilliamsCPA
+
+# CI/CD and configuration
+/.github/workflows/** @ByronWilliamsCPA
+pyproject.toml @ByronWilliamsCPA
+.pre-commit-config.yaml @ByronWilliamsCPA
+
+# Documentation
+/docs/** @ByronWilliamsCPA
