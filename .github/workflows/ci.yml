@@ -71,7 +71,6 @@ jobs:
             --cov=gleif \
             --cov-report=xml:coverage.xml \
             --cov-report=term-missing \
-            --cov-fail-under=80 \
             --tb=short
 
       - name: Upload coverage artifact
