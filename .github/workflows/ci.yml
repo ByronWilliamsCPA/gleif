@@ -28,8 +28,7 @@ on:
       - main
       - develop
 
-permissions:
-  contents: read
+permissions: read-all
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -123,6 +122,11 @@ jobs:
     needs: [test, quality-checks]
     if: always()
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
+        with:
+          egress-policy: audit
+
       - name: Validate CI Results
         run: |
           if [[ "${{ needs.test.result }}" == "success" && \

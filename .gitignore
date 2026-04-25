@@ -12,3 +12,45 @@ wheels/
 # Claude Code configuration
 CLAUDE.md
 .claude/
+
+# Worktrees (global CLAUDE.md standard)
+.worktrees/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+
+# DuckDB database files (never commit user data)
+*.duckdb
+*.duckdb.wal
+
+# Test coverage artifacts
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS metadata
+.DS_Store
+
+# IDE directories
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# MkDocs build output
+site/
+
+# GLEIF ZIP downloads
+*.zip
+
+# Secrets baseline (detect-secrets)
+.secrets.baseline

@@ -22,6 +22,10 @@ on:
 
 permissions: read-all
 
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   detect-changes:
     name: Detect Security-Relevant Changes
@@ -29,6 +33,11 @@ jobs:
     outputs:
       security_files: ${{ steps.filter.outputs.security }}
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Check for security-relevant file changes
@@ -45,7 +54,8 @@ jobs:
   codeql-analysis:
     name: CodeQL Security Analysis
     runs-on: ubuntu-latest
-    needs: detect-changes
+    needs: [detect-changes]
+    if: needs.detect-changes.outputs.security_files == 'true'
     timeout-minutes: 15
     permissions:
       contents: read
@@ -150,8 +160,8 @@ jobs:
       - name: Bandit Security Analysis
         run: |
           uv run pip install bandit
-          uv run bandit -r src -f json -o bandit-report.json || true
-          uv run bandit -r src || true
+          uv run bandit -r src -f json -o bandit-report.json
+          uv run bandit -r src --level HIGH
 
       - name: Upload Security Reports
         if: always()
@@ -232,6 +242,11 @@ jobs:
     needs: [detect-changes, codeql-analysis, dependency-security, security-scanning, osv-scanner]
     if: always()
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@91182cccc01eb5e619899d80e4e971d6181294a7  # v2.10.1
+        with:
+          egress-policy: audit
+
       - name: Security Gate Results
         run: |
           is_acceptable() {

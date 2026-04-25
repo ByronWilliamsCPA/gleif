@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 from typer.testing import CliRunner
@@ -10,13 +10,16 @@ from typer.testing import CliRunner
 from gleif.cli import app
 from gleif.constants import DatasetType
 from gleif.db import (
-    _create_indexes,
-    _update_metadata,
+    create_indexes,
     create_schema,
     load_lei_records,
     load_relationships,
     load_reporting_exceptions,
+    update_metadata,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 runner = CliRunner()
 
@@ -33,10 +36,10 @@ def _create_test_db(
     count_lei = load_lei_records(con, lei_csv)
     count_rr = load_relationships(con, rr_csv)
     count_repex = load_reporting_exceptions(con, repex_csv)
-    _create_indexes(con)
-    _update_metadata(con, DatasetType.LEI, "2024-01-01", count_lei)
-    _update_metadata(con, DatasetType.RELATIONSHIPS, "2024-01-01", count_rr)
-    _update_metadata(con, DatasetType.REPORTING_EXCEPTIONS, "2024-01-01", count_repex)
+    create_indexes(con)
+    update_metadata(con, DatasetType.LEI, "2024-01-01", count_lei)
+    update_metadata(con, DatasetType.RELATIONSHIPS, "2024-01-01", count_rr)
+    update_metadata(con, DatasetType.REPORTING_EXCEPTIONS, "2024-01-01", count_repex)
     con.close()
 
 
@@ -180,10 +183,10 @@ def _create_deep_hierarchy_db(
     count_lei = load_lei_records(con, lei_csv)
     count_rr = load_relationships(con, rr_csv)
     count_repex = load_reporting_exceptions(con, repex_csv)
-    _create_indexes(con)
-    _update_metadata(con, DatasetType.LEI, "2024-01-01", count_lei)
-    _update_metadata(con, DatasetType.RELATIONSHIPS, "2024-01-01", count_rr)
-    _update_metadata(con, DatasetType.REPORTING_EXCEPTIONS, "2024-01-01", count_repex)
+    create_indexes(con)
+    update_metadata(con, DatasetType.LEI, "2024-01-01", count_lei)
+    update_metadata(con, DatasetType.RELATIONSHIPS, "2024-01-01", count_rr)
+    update_metadata(con, DatasetType.REPORTING_EXCEPTIONS, "2024-01-01", count_repex)
     con.execute(
         "INSERT INTO lei_records "
         "(lei, legal_name, entity_status, registration_status, "

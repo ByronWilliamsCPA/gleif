@@ -80,6 +80,11 @@ mode = "comment"
 name = "ruff"
 driver = "lint"
 
+# Python type checking
+[[plugin]]
+name = "basedpyright"
+enabled = true
+
 # Secrets detection
 [[plugin]]
 name = "trufflehog"

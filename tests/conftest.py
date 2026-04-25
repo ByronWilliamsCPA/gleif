@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import csv
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 import pytest
@@ -14,6 +14,9 @@ from gleif.db import (
     load_relationships,
     load_reporting_exceptions,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture

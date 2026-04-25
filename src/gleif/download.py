@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import zipfile
 from dataclasses import dataclass
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
 from rich.progress import (
@@ -17,6 +17,9 @@ from rich.progress import (
 )
 
 from gleif.constants import DATASET_LABELS, DATASET_URLS, DatasetType
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -33,7 +36,7 @@ def _publish_date_marker(data_dir: Path, dataset_type: DatasetType) -> Path:
     return data_dir / f"{dataset_type.value}_publish_date.txt"
 
 
-def _read_local_publish_date(data_dir: Path, dataset_type: DatasetType) -> str | None:
+def read_local_publish_date(data_dir: Path, dataset_type: DatasetType) -> str | None:
     marker = _publish_date_marker(data_dir, dataset_type)
     if marker.exists():
         return marker.read_text().strip()
@@ -47,7 +50,7 @@ def _write_local_publish_date(
     marker.write_text(publish_date)
 
 
-def _find_extracted_csv(data_dir: Path, dataset_type: DatasetType) -> Path | None:
+def find_extracted_csv(data_dir: Path, dataset_type: DatasetType) -> Path | None:
     """Find an already-extracted CSV for this dataset type."""
     pattern = f"*-gleif-goldencopy-{dataset_type.value}-*"
     csvs = sorted(data_dir.glob(pattern))
@@ -87,8 +90,8 @@ async def download_dataset(
 
         # Check freshness
         if not force:
-            local_date = _read_local_publish_date(data_dir, dataset_type)
-            existing_csv = _find_extracted_csv(data_dir, dataset_type)
+            local_date = read_local_publish_date(data_dir, dataset_type)
+            existing_csv = find_extracted_csv(data_dir, dataset_type)
             if (
                 local_date == remote_publish_date
                 and existing_csv is not None

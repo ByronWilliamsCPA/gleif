@@ -15,6 +15,10 @@ dependencies = [
     "rich>=13.0.0",
 ]
 
+[project.urls]
+Repository = "https://github.com/ByronWilliamsCPA/gleif"
+Changelog = "https://github.com/ByronWilliamsCPA/gleif/blob/main/CHANGELOG.md"
+
 [project.scripts]
 gleif = "gleif.cli:app"
 
@@ -37,22 +41,31 @@ select = [
     "SLF", "SIM", "TID", "ARG", "PGH", "PL", "TRY",
     "FLY", "PERF", "RUF", "BLE", "EM", "FA", "G",
     "T10", "C901",
+    "ANN", "DTZ", "FBT", "FURB", "INP", "LOG", "PYI",
+    "Q", "S", "T20", "TCH", "YTT", "ASYNC",
 ]
 ignore = [
     "COM812",   # trailing comma (conflicts with formatter)
     "ISC001",   # implicit string concat (conflicts with formatter)
     "TRY003",   # long exception messages
+    "ANN401",   # dynamically typed expressions (Any)
+    "S101",     # use of assert (fine in tests)
+    "FBT001",   # boolean positional arg (common in CLI tools)
+    "FBT002",   # boolean default arg (common in CLI tools)
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["PLR2004", "SLF001"]
+"src/gleif/db.py" = ["S608"]      # f-strings only used for read_csv() file paths, not user input
+"src/gleif/queries.py" = ["S608"] # parameterized queries ($1/$2) used for all user-supplied values
 
 [tool.ruff.lint.pylint]
 max-args = 6
 
 [tool.basedpyright]
 pythonVersion = "3.11"
-typeCheckingMode = "standard"
+pythonPlatform = "All"
+typeCheckingMode = "strict"
 strictListInference = true
 strictDictionaryInference = true
 strictSetInference = true
@@ -65,6 +78,30 @@ addopts = "-v --cov=gleif --cov-report=term-missing"
 
 [tool.bandit]
 exclude_dirs = ["tests"]
+skips = ["B608"]  # read_csv() paths and column constants are app-controlled, not user input
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+fail_under = 65  # interim: raise to 80 once download.py and CLI command tests are added
+
+[tool.darglint]
+docstring_style = "google"
+strictness = "short"
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-init-module = true
+ignore-magic = true
+ignore-semiprivate = false
+ignore-private = false
+ignore-module = false
+fail-under = 80
+verbose = 0
+quiet = false
+whitelist-regex = []
+color = true
 
 [dependency-groups]
 dev = [
@@ -74,5 +111,7 @@ dev = [
     "ruff>=0.7.0",
     "basedpyright>=1.20",
     "pre-commit>=3.6",
+    "pip-audit>=2.7",
     "bandit[toml]>=1.7",
+    "mkdocs-material>=9.5",
 ]
