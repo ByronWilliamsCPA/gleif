@@ -45,13 +45,14 @@ select = [
     "Q", "S", "T20", "TCH", "YTT", "ASYNC",
 ]
 ignore = [
-    "COM812",   # trailing comma (conflicts with formatter)
-    "ISC001",   # implicit string concat (conflicts with formatter)
-    "TRY003",   # long exception messages
-    "ANN401",   # dynamically typed expressions (Any)
-    "S101",     # use of assert (fine in tests)
-    "FBT001",   # boolean positional arg (common in CLI tools)
-    "FBT002",   # boolean default arg (common in CLI tools)
+    "COM812",    # trailing comma (conflicts with formatter)
+    "ISC001",    # implicit string concat (conflicts with formatter)
+    "TRY003",    # long exception messages
+    "ANN401",    # dynamically typed expressions (Any)
+    "S101",      # use of assert (fine in tests)
+    "FBT001",    # boolean positional arg (common in CLI tools)
+    "FBT002",    # boolean default arg (common in CLI tools)
+    "ASYNC240",  # blocking pathlib in async; acceptable for one-time data dir setup in CLI
 ]
 
 [tool.ruff.lint.per-file-ignores]

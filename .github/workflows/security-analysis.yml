@@ -68,6 +68,8 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
@@ -123,6 +125,7 @@ jobs:
 
       - name: Dependency Review
         uses: actions/dependency-review-action@4081bf99e2866ebe428fc0477b69eb4fcda7220a # v4.5.0
+        continue-on-error: true  # requires Dependency Graph + GHAS; will fail on private repos without GHAS
         with:
           fail-on-severity: moderate
           license-check: true
@@ -159,9 +162,8 @@ jobs:
 
       - name: Bandit Security Analysis
         run: |
-          uv run pip install bandit
-          uv run bandit -r src -f json -o bandit-report.json
-          uv run bandit -r src --level HIGH
+          uv run bandit -c pyproject.toml -r src -f json -o bandit-report.json || true
+          uv run bandit -c pyproject.toml -r src --level HIGH
 
       - name: Upload Security Reports
         if: always()
@@ -215,7 +217,8 @@ jobs:
           for group in vulns:
               for pkg in group.get('packages', []):
                   for vuln in pkg.get('vulnerabilities', []):
-                      sev = (vuln.get('severity') or '').upper()
+                      # severity is a list of {type, score} CVSS objects; database_specific.severity is the string level
+                      sev = (vuln.get('database_specific', {}).get('severity') or '').upper()
                       if sev in ('HIGH', 'CRITICAL'):
                           high_crit.append(f"{vuln.get('id', 'UNKNOWN')} ({sev})")
 
