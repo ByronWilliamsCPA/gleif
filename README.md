@@ -1,73 +1,100 @@
 # gleif
 
-CLI tool for downloading GLEIF (Global Legal Entity Identifier Foundation) golden copy
-datasets, loading them into a local DuckDB database, and querying LEI relationship
-hierarchies.
+A CLI that downloads [GLEIF](https://www.gleif.org) golden copy datasets, loads them into a
+local [DuckDB](https://duckdb.org) database, and lets you query LEI relationship hierarchies
+from the command line.
+
+```
+gleif lei 2138005YL12BKW2FQA89
+```
+
+```
+Entity          APPLE INC.
+LEI             2138005YL12BKW2FQA89
+Status          ACTIVE
+Jurisdiction    US
+
+Direct parent   549300BPKFKRT74GKU44  (APPLE INC.)
+Ultimate parent 549300BPKFKRT74GKU44  (APPLE INC.)
+
+Children (2)
+  LEI                          Name
+  XKZZ2JZF41MRHTR1V493        Apple Operations International Limited
+  ...
+```
 
 ## Features
 
-- Download all three GLEIF Level 1 and Level 2 datasets
-- Bulk-load CSVs into a local DuckDB database for fast querying
-- Look up any LEI and display its parents, children, siblings, and reporting exceptions
-- Search entities by legal name
-- Optional ISIN mapping via GLEIF REST API
+- Downloads all three GLEIF golden copy datasets (Level 1 LEI, Level 2 Relationships,
+  Level 2 Reporting Exceptions) with freshness checking
+- Bulk-loads CSVs into a local DuckDB database (~5 GB uncompressed, loads in under a minute)
+- Traverses full parent/child/sibling hierarchies for any LEI
+- Resolves reporting exceptions (why a parent relationship was not reported)
+- Optional ISIN lookups via the GLEIF REST API (`--isin`)
+- Substring name search across all registered legal entities
 
 ## Requirements
 
 - Python 3.11+
-- [uv](https://github.com/astral-sh/uv) package manager
+- [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ## Installation
 
 ```bash
-uv sync --all-extras
+uv tool install gleif
 ```
 
-## Quick Start
+Or from source:
 
 ```bash
-# Download GLEIF datasets and load into DuckDB (one step)
-uv run gleif refresh
-
-# Look up an LEI
-uv run gleif lei 5493001KJTIIGC8Y1R12
-
-# Include ISIN mappings
-uv run gleif lei 5493001KJTIIGC8Y1R12 --isin
-
-# Search by name
-uv run gleif name "Goldman Sachs"
-
-# Show database record counts
-uv run gleif status
+git clone https://github.com/ByronWilliamsCPA/gleif.git
+cd gleif
+uv sync
 ```
 
-## Commands
+## Usage
 
-| Command | Description |
-| ------- | ----------- |
-| `gleif download` | Download GLEIF datasets (ZIP files) |
-| `gleif load` | Load downloaded CSVs into DuckDB |
-| `gleif refresh` | Download and load in one step |
-| `gleif lei <LEI>` | Look up an LEI and display related entities |
-| `gleif name <QUERY>` | Search entities by legal name (substring) |
-| `gleif status` | Show database record counts and data freshness |
+```bash
+# Download all three GLEIF golden copy datasets
+gleif download
 
-## Data Storage
+# Load downloaded CSVs into the local DuckDB database
+gleif load
 
-By default, data is stored in:
+# Download + load in one step
+gleif refresh
 
-- Data files: `~/.local/share/gleif/data`
-- Database: `~/.local/share/gleif/gleif.duckdb`
+# Look up an LEI and display its full relationship hierarchy
+gleif lei 2138005YL12BKW2FQA89
 
-## Documentation
+# Include ISIN mappings in the report
+gleif lei 2138005YL12BKW2FQA89 --isin
 
-Full documentation including CLI reference, architecture overview, and data model:
-see the `docs/` directory or run `uv run mkdocs serve` to browse locally.
+# Search for entities by legal name (substring)
+gleif name "Apple"
 
-## Contributing
+# Show record counts for all database tables
+gleif status
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Data is stored at `~/.local/share/gleif/` by default.
+
+## Architecture
+
+Three GLEIF datasets are downloaded as ZIPs, extracted to CSV, and bulk-loaded
+into a local DuckDB database:
+
+| Dataset | Table | Key |
+| ------- | ----- | --- |
+| Level 1 LEI (`lei2`) | `lei_records` | `lei` |
+| Level 2 Relationships (`rr`) | `relationships` | `(start_node_id, end_node_id, relationship_type)` |
+| Level 2 Reporting Exceptions (`repex`) | `reporting_exceptions` | `(lei, exception_category)` |
+
+Relationship direction: `start_node_id` is the child, `end_node_id` is the parent.
+
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and contribution instructions.
 
 ## License
 

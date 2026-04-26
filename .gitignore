@@ -13,33 +13,43 @@ wheels/
 CLAUDE.md
 .claude/
 
-# Worktrees (global CLAUDE.md standard)
+# Git worktrees
 .worktrees/
 
 # Environment and secrets
 .env
 .env.*
 *.env
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
 
-# DuckDB database files (never commit user data)
+# Database files
 *.duckdb
 *.duckdb.wal
+*.db
+*.sqlite
+*.sqlite3
 
 # Test coverage artifacts
-htmlcov/
 .coverage
 .coverage.*
 coverage.xml
+htmlcov/
+.pytest_cache/
 
 # Tool caches
-.pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.mypy_cache/
+.basedpyright/
 
-# OS metadata
+# OS metadata and editor files
 .DS_Store
-
-# IDE directories
+*.swp
+*.swo
 .idea/
 .vscode/
 
@@ -51,6 +61,3 @@ site/
 
 # GLEIF ZIP downloads
 *.zip
-
-# Secrets baseline (detect-secrets)
-.secrets.baseline

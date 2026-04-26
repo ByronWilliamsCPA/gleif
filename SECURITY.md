@@ -8,13 +8,27 @@
 
 ## Reporting a Vulnerability
 
-To report a vulnerability privately, use GitHub's
-[Private Vulnerability Reporting](https://github.com/ByronWilliamsCPA/gleif/security/advisories/new)
-feature. Do not open a public issue for security vulnerabilities.
+Please do not open a public GitHub issue for security vulnerabilities.
 
-We commit to acknowledging all vulnerability reports within 14 days of submission.
+Use [GitHub private vulnerability reporting](https://github.com/ByronWilliamsCPA/gleif/security/advisories/new)
+to submit a report. You will receive a response within 72 hours acknowledging receipt.
 
-## Disclosure Policy
+If the vulnerability is confirmed, a fix will be prioritized based on severity:
 
-After a fix is released, vulnerabilities will be disclosed publicly via GitHub
-Security Advisories with a CVE ID if one has been assigned.
+- **Critical / High**: patch released within 7 days
+- **Medium**: patch released within 30 days
+- **Low**: addressed in the next scheduled release
+
+You will be credited in the release notes unless you request otherwise.
+
+## Scope
+
+This tool downloads and processes publicly available GLEIF data files. It does not
+handle authentication credentials, payment data, or personal information beyond
+what is present in the GLEIF golden copy datasets (which are public records).
+
+The primary security surface areas are:
+
+- **Dependency vulnerabilities**: tracked with `uv run pip-audit` and OSV Scanner
+- **ZIP path traversal**: mitigated in `download.py` via safe extraction logic
+- **SQL injection**: mitigated by parameterized DuckDB queries in `queries.py`
