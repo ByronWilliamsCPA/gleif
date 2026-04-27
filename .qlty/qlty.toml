@@ -56,11 +56,6 @@ name = "actionlint"
 [[plugin]]
 name = "bandit"
 
-[plugin.exclusions]
-- = "tests/**"
-- = "**/test_*.py"
-- = "**/*_test.py"
-
 # Dependency vulnerability scanning
 [[plugin]]
 name = "osv-scanner"
@@ -93,11 +88,6 @@ name = "trufflehog"
 [[plugin]]
 name = "semgrep"
 
-[plugin.exclusions]
-- = "tests/**"
-- = "**/test_*.py"
-- = "**/*_test.py"
-
 # Markdown documentation linting
 [[plugin]]
 name = "markdownlint"
@@ -105,6 +95,15 @@ name = "markdownlint"
 # YAML configuration linting
 [[plugin]]
 name = "yamllint"
+
+# ---------------------------------------------------------------------------
+# Per-plugin exclusions
+# ---------------------------------------------------------------------------
+
+# bandit and semgrep should not scan test files
+[[exclude]]
+plugins = ["bandit", "semgrep"]
+file_patterns = ["tests/**", "**/test_*.py", "**/*_test.py"]
 
 # ---------------------------------------------------------------------------
 # Triage rules (suppress known false positives)
