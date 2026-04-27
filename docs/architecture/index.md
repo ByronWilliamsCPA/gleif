@@ -48,7 +48,7 @@ The full Level 1 CSV has 338 columns. Loading only the ~30 relevant columns via 
 
 ### Relationship direction convention
 
-In the GLEIF relationship dataset, `start_node_id` is the **child** and `end_node_id` is the **parent**. This feels counter-intuitive but follows the GLEIF spec: the relationship type is `IS_DIRECTLY_CONSOLIDATED_BY`, read left-to-right as "child IS_DIRECTLY_CONSOLIDATED_BY parent".
+In the GLEIF relationship dataset, `start_node_id` is the **child** and `end_node_id` is the **parent**. This follows the GLEIF spec: the relationship type is `IS_DIRECTLY_CONSOLIDATED_BY`, read left-to-right as "child IS_DIRECTLY_CONSOLIDATED_BY parent".
 
 ```sql
 -- Find the direct parent of an entity
@@ -78,7 +78,7 @@ The `MAX_HIERARCHY_DEPTH` constant (default: 50) provides a secondary depth limi
 
 ### Async download with sequential loading
 
-All three datasets are downloaded concurrently using `asyncio.gather()` with a shared Rich progress bar. Loading is done sequentially: DuckDB connections are not thread-safe, and `CREATE OR REPLACE TABLE` DDL statements cannot be parallelized over a single connection without transactions.
+All three datasets are downloaded concurrently using `asyncio.gather()` with a shared Rich progress bar. Loading is done sequentially: DuckDB connections are not thread-safe, and `CREATE OR REPLACE TABLE` DDL statements cannot be parallelized over a single connection.
 
 ### Frozen dataclasses as query return types
 

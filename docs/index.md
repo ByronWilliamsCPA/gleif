@@ -1,3 +1,5 @@
+[![CI](https://github.com/ByronWilliamsCPA/gleif/actions/workflows/ci.yml/badge.svg)](https://github.com/ByronWilliamsCPA/gleif/actions/workflows/ci.yml) [![Coverage](https://qlty.sh/badges/5c2ef323-6b73-4461-a1cf-e38e10ea4424/coverage.svg)](https://qlty.sh/gh/ByronWilliamsCPA/projects/gleif)
+
 # GLEIF CLI
 
 A command-line tool for working with [GLEIF](https://www.gleif.org/) (Global Legal Entity Identifier Foundation) golden copy datasets. It downloads the three public LEI datasets, loads them into a local [DuckDB](https://duckdb.org/) database, and lets you query ownership hierarchies, search entities by name, and resolve ISINs.

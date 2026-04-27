@@ -24,7 +24,10 @@ uv run gleif --help
 
 ## First run
 
-The datasets are large (the Level 1 LEI file is ~800 MB compressed). Allow 5-10 minutes for the initial download on a typical broadband connection.
+The datasets are large (the Level 1 LEI file alone is ~800 MB compressed). Allow 5-10 minutes for the initial download on a typical broadband connection.
+
+!!! warning "Disk space"
+    The initial refresh requires approximately 2 GB of free disk space: ~835 MB for the three ZIP archives during download, plus ~1 GB for the loaded DuckDB database. The ZIPs are deleted after extraction, leaving ~1 GB in use at steady state.
 
 ```bash
 # Download all three datasets and load them into DuckDB in one step
@@ -33,19 +36,16 @@ uv run gleif refresh
 
 Output:
 
-```
+```text
 Refreshing GLEIF data...
   Level 1 - LEI Records ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 823 MB  4.2 MB/s
   Level 2 - Relationships ━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100%  12 MB  4.1 MB/s
   Level 2 - Reporting Exceptions ━━━━━━━━━━━━━━━━━━━━ 100%   3 MB  4.0 MB/s
 
 Loading into ~/.local/share/gleif/gleif.duckdb...
-  Loading Level 1 - LEI Records from 20240401-gleif-goldencopy-lei2-...csv...
-    2,381,240 rows loaded
-  Loading Level 2 - Relationships from ...csv...
-    4,012,887 rows loaded
-  Loading Level 2 - Reporting Exceptions from ...csv...
-    521,044 rows loaded
+  Loading Level 1 - LEI Records...    2,381,240 rows loaded
+  Loading Level 2 - Relationships...  4,012,887 rows loaded
+  Loading Level 2 - Reporting Exceptions...  521,044 rows loaded
   Creating indexes...
   Done.
 Refresh complete.
@@ -84,17 +84,6 @@ Check when your data was last loaded:
 uv run gleif status
 ```
 
-```
-             GLEIF Database Status
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
-┃ Dataset                         ┃ Publish Date ┃ Loaded At           ┃   Records ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
-│ Level 1 - LEI Records           │ 2024-04-01   │ 2024-04-02 08:14:05 │ 2,381,240 │
-│ Level 2 - Relationships         │ 2024-04-01   │ 2024-04-02 08:14:05 │ 4,012,887 │
-│ Level 2 - Reporting Exceptions  │ 2024-04-01   │ 2024-04-02 08:14:05 │   521,044 │
-└─────────────────────────────────┴──────────────┴─────────────────────┴───────────┘
-```
-
 ## Your first LEI lookup
 
 ```bash
@@ -121,3 +110,5 @@ To include ISIN mappings from the GLEIF REST API:
 ```bash
 uv run gleif lei HWUPKR0MPOU8FGXBT394 --isin
 ```
+
+An ISIN (International Securities Identification Number) is a 12-character alphanumeric code that uniquely identifies a security such as a stock or bond. GLEIF maps LEIs to ISINs where the legal entity is also an issuer of securities.
