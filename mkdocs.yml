@@ -71,6 +71,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - CLI Reference: cli-reference.md
+  - Troubleshooting: troubleshooting.md
   - Architecture:
       - Overview: architecture/index.md
       - Data Model & Schema: architecture/data-model.md
