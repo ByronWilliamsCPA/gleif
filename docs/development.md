@@ -26,8 +26,13 @@ uv run pytest tests/test_queries.py
 # Single test
 uv run pytest tests/test_queries.py::TestGetEntity::test_finds_existing_entity
 
-# Open HTML coverage report
-uv run pytest --cov-report=html && open htmlcov/index.html
+# Run all tests with coverage report
+uv run pytest --cov-report=html
+
+# Open the HTML report (macOS: open, Linux: xdg-open, Windows: start)
+open htmlcov/index.html      # macOS
+xdg-open htmlcov/index.html  # Linux
+start htmlcov/index.html     # Windows (Git Bash / WSL)
 ```
 
 ### Test fixture hierarchy
@@ -125,3 +130,4 @@ Qlty also runs locally via pre-commit: `qlty fmt` on pre-commit (auto-format sta
 - [ ] No vulnerabilities older than 60 days
 - [ ] `uv run pre-commit run --all-files` passes cleanly
 - [ ] Version tag follows SemVer (`v0.1.0`, `v1.0.0`, etc.)
+- [ ] All release commits are GPG-signed
