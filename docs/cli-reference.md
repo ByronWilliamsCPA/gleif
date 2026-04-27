@@ -55,6 +55,13 @@ Each dataset is downloaded as a ZIP, extracted to a CSV, and the ZIP is deleted.
 <date>-gleif-goldencopy-repex-full-publish.csv
 ```
 
+### Exit codes
+
+| Code | Meaning |
+| ---- | ------- |
+| 0 | All datasets downloaded successfully (or already current, skipped) |
+| Non-zero | Network or HTTP error (unhandled exception) |
+
 ---
 
 ## `gleif load`
@@ -73,6 +80,13 @@ Options:
 !!! note
     If no extracted CSV is found for a dataset, the command exits with code 1 and instructs you to run `gleif download` first.
 
+### Exit codes
+
+| Code | Meaning |
+| ---- | ------- |
+| 0 | All CSVs loaded successfully |
+| 1 | A required CSV is missing; run `gleif download` first |
+
 ---
 
 ## `gleif refresh`
@@ -88,6 +102,13 @@ Options:
   --force          Re-download even if local data is current.
   --help           Show this message and exit.
 ```
+
+### Exit codes
+
+| Code | Meaning |
+| ---- | ------- |
+| 0 | Download and load completed successfully |
+| Non-zero | Network or HTTP error (unhandled exception) |
 
 ---
 
@@ -161,6 +182,16 @@ Results are displayed in a table with columns: LEI, Legal Name, Jurisdiction, St
 gleif name "volkswagen" --limit 20
 ```
 
+### Match behavior
+
+Queries use a case-insensitive substring match (`ILIKE '%query%'`) against the `legal_name` column, using DuckDB's default collation. Results are ordered alphabetically by legal name. Passing `--limit` caps the result count; the default is 100.
+
+### Exit codes
+
+| Code | Meaning |
+| ---- | ------- |
+| 0 | Success (results found, or no results) |
+
 ---
 
 ## `gleif status`
@@ -175,4 +206,11 @@ Options:
   --help     Show this message and exit.
 ```
 
-Shows a table with dataset name, publish date, load timestamp, and row count. Exits with code 1 if the database file does not exist or no data has been loaded.
+Shows a table with dataset name, publish date, load timestamp, and row count.
+
+### Exit codes
+
+| Code | Meaning |
+| ---- | ------- |
+| 0 | Database exists and data is loaded |
+| 1 | Database file not found, or no data loaded yet |
