@@ -26,6 +26,9 @@ uv run gleif --help
 
 The datasets are large (the Level 1 LEI file is ~800 MB compressed). Allow 5-10 minutes for the initial download on a typical broadband connection.
 
+!!! warning "Disk space"
+    The initial refresh requires approximately 2 GB of free disk space: ~835 MB for the three ZIP archives during download, plus ~1 GB for the loaded DuckDB database. The ZIPs are deleted after extraction, leaving ~1 GB in use at steady state.
+
 ```bash
 # Download all three datasets and load them into DuckDB in one step
 uv run gleif refresh
@@ -107,3 +110,5 @@ To include ISIN mappings from the GLEIF REST API:
 ```bash
 uv run gleif lei HWUPKR0MPOU8FGXBT394 --isin
 ```
+
+An ISIN (International Securities Identification Number) is a 12-character alphanumeric code that uniquely identifies a security such as a stock or bond. GLEIF maps LEIs to ISINs where the legal entity is also an issuer of securities.
