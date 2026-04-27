@@ -9,6 +9,10 @@ site_description: >-
   DuckDB, and querying LEI relationship hierarchies.
 
 docs_dir: docs
+site_url: https://byronwilliamscpa.github.io/gleif/
+repo_url: https://github.com/ByronWilliamsCPA/gleif
+repo_name: ByronWilliamsCPA/gleif
+copyright: "© 2026 GLEIF CLI"
 
 theme:
   name: material
@@ -20,9 +24,7 @@ theme:
     - navigation.indexes
     - search.suggest
     - search.highlight
-    - content.tabs.link
     - content.code.copy
-    - toc.integrate
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -46,8 +48,6 @@ markdown_extensions:
   - admonition
   - attr_list
   - def_list
-  - footnotes
-  - md_in_html
   - tables
   - toc:
       permalink: true
@@ -59,8 +59,6 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.tabbed:
-      alternate_style: true
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg

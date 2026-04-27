@@ -114,5 +114,5 @@ dev = [
     "pre-commit>=3.6",
     "pip-audit>=2.7",
     "bandit[toml]>=1.7",
-    "mkdocs-material>=9.5",
+    "mkdocs-material>=9.5,<10",
 ]
