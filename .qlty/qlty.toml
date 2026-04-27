@@ -45,6 +45,14 @@ test_patterns = [
 ]
 
 # ---------------------------------------------------------------------------
+# Plugin source registry
+# ---------------------------------------------------------------------------
+
+[[source]]
+name = "default"
+default = true
+
+# ---------------------------------------------------------------------------
 # Plugin configuration
 # ---------------------------------------------------------------------------
 
@@ -73,12 +81,7 @@ mode = "comment"
 # Python formatting & linting
 [[plugin]]
 name = "ruff"
-driver = "lint"
-
-# Python type checking
-[[plugin]]
-name = "basedpyright"
-enabled = true
+drivers = ["lint"]
 
 # Secrets detection
 [[plugin]]
