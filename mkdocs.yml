@@ -13,6 +13,7 @@ site_url: https://byronwilliamscpa.github.io/gleif/
 repo_url: https://github.com/ByronWilliamsCPA/gleif
 repo_name: ByronWilliamsCPA/gleif
 copyright: "© 2026 GLEIF CLI"
+site_author: Byron Williams
 
 theme:
   name: material
