@@ -131,11 +131,27 @@ rule = "radarlint-python:S1135"
 level = "ignore"
 
 # f-string SQL in db.py uses read_csv() file paths, not user input
-# Parameterized queries are used for all user-supplied values in queries.py
 [[triage]]
 rule = "semgrep:sql-injection-format-string"
 level = "ignore"
 path = "src/gleif/db.py"
+
+[[triage]]
+rule = "bandit:B608"
+level = "ignore"
+path = "src/gleif/db.py"
+
+# f-string SQL in queries.py interpolates only _ENTITY_COLS (a module constant)
+# All user-supplied values use $1/$2 DuckDB parameterized placeholders
+[[triage]]
+rule = "semgrep:sql-injection-format-string"
+level = "ignore"
+path = "src/gleif/queries.py"
+
+[[triage]]
+rule = "bandit:B608"
+level = "ignore"
+path = "src/gleif/queries.py"
 
 # MkDocs admonitions require 4-space-indented fenced code blocks; markdownlint
 # treats these as "indented style" mixed with fenced, producing false positives
