@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-import duckdb
+from typing import TYPE_CHECKING
 
 from gleif.queries import (
     get_ancestor_chain,
     get_corporate_group,
     get_descendant_tree,
 )
+
+if TYPE_CHECKING:
+    import duckdb
 
 
 class TestGetAncestorChain:
@@ -138,7 +141,7 @@ class TestGetDescendantTree:
         """Shared entity (child of both Child A and Child B) appears once."""
         tree = get_descendant_tree(diamond_db, "ULTIMATE000000000001")
         shared_nodes = [n for n in tree if n.lei == "SHARED00000000000001"]
-        # Path tracking prevents revisiting — Shared appears once
+        # Path tracking prevents revisiting; Shared appears once
         assert len(shared_nodes) == 1
 
 

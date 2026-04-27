@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 from rich.console import Console
@@ -13,7 +13,11 @@ from gleif.constants import (
     RR_CORE_COLUMNS,
     DatasetType,
 )
-from gleif.download import DownloadResult
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from gleif.download import DownloadResult
 
 console = Console()
 
@@ -133,7 +137,10 @@ _INDEXES = [
 
 
 def create_schema(con: duckdb.DuckDBPyConnection) -> None:
-    """Create all tables (without indexes — those come after loading).
+    """Create the load_metadata tracking table.
+
+    Data tables (lei_records, relationships, reporting_exceptions) are created
+    during loading via CREATE OR REPLACE TABLE ... AS SELECT ... FROM read_csv().
 
     Args:
         con: Open DuckDB connection.
@@ -141,7 +148,7 @@ def create_schema(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(_LOAD_METADATA_DDL)
 
 
-def _create_indexes(con: duckdb.DuckDBPyConnection) -> None:
+def create_indexes(con: duckdb.DuckDBPyConnection) -> None:
     """Create indexes after bulk loading."""
     for stmt in _INDEXES:
         con.execute(stmt)
@@ -159,7 +166,7 @@ def _build_select_clause(column_map: dict[str, str]) -> str:
         column_map: Mapping from CSV header name to desired DB column name.
 
     Returns:
-        SQL fragment like: "col1" AS alias1, "col2" AS alias2, ...
+        Comma-separated SELECT fragments quoting each source column and aliasing it.
     """
     parts = [f'"{csv_col}" AS {db_col}' for csv_col, db_col in column_map.items()]
     return ", ".join(parts)
@@ -252,7 +259,7 @@ def load_reporting_exceptions(con: duckdb.DuckDBPyConnection, csv_path: Path) ->
     return result[0] if result else 0
 
 
-def _update_metadata(
+def update_metadata(
     con: duckdb.DuckDBPyConnection,
     dataset_type: DatasetType,
     publish_date: str,
@@ -302,12 +309,12 @@ def load_all(
             f"  Loading [cyan]{result.record_label}[/] from {result.csv_path.name}..."
         )
         count = loader(con, result.csv_path)
-        _update_metadata(con, result.dataset_type, result.publish_date, count)
+        update_metadata(con, result.dataset_type, result.publish_date, count)
         counts[result.dataset_type] = count
         console.print(f"    [green]{count:,} rows loaded[/]")
 
     console.print("  Creating indexes...")
-    _create_indexes(con)
+    create_indexes(con)
     console.print("  [green]Done.[/]")
 
     return counts

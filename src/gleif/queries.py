@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import duckdb
+from typing import TYPE_CHECKING
 
 from gleif.constants import DIRECT_PARENT, MAX_HIERARCHY_DEPTH, ULTIMATE_PARENT
 from gleif.models import (
@@ -14,13 +14,21 @@ from gleif.models import (
     ReportingException,
 )
 
+if TYPE_CHECKING:
+    import duckdb
+
 
 def _row_to_entity(row: tuple[object, ...]) -> EntityInfo:
     """Convert a database row to an EntityInfo dataclass.
 
-    Expected column order: lei, legal_name, entity_status, registration_status,
-    entity_category, legal_jurisdiction, legal_address_city,
-    legal_address_country, hq_address_city, hq_address_country.
+    Args:
+        row: Tuple with columns in order: lei, legal_name, entity_status,
+            registration_status, entity_category, legal_jurisdiction,
+            legal_address_city, legal_address_country, hq_address_city,
+            hq_address_country.
+
+    Returns:
+        EntityInfo populated from the row values.
     """
     return EntityInfo(
         lei=str(row[0]),
@@ -254,8 +262,12 @@ def get_reporting_exceptions(
 def _row_to_hierarchy_node(row: tuple[object, ...]) -> HierarchyNode:
     """Convert a CTE result row to a HierarchyNode.
 
-    Expected column order: node_lei, legal_name, entity_status,
-    entity_category, legal_jurisdiction, via_type, depth, parent_lei.
+    Args:
+        row: Tuple with columns in order: node_lei, legal_name, entity_status,
+            entity_category, legal_jurisdiction, via_type, depth, parent_lei.
+
+    Returns:
+        HierarchyNode populated from the row values.
     """
     return HierarchyNode(
         lei=str(row[0]),

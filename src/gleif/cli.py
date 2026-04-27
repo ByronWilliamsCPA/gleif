@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from rich.console import Console
@@ -22,8 +22,15 @@ from gleif.constants import (
 from gleif.db import get_connection, get_status, load_all
 from gleif.download import download_all
 from gleif.isin import fetch_isins_batch
-from gleif.models import CorporateGroup, LEIRelationshipReport, RelatedEntity
 from gleif.queries import get_corporate_group, get_full_report, search_by_name
+
+if TYPE_CHECKING:
+    from gleif.models import (
+        CorporateGroup,
+        HierarchyNode,
+        LEIRelationshipReport,
+        RelatedEntity,
+    )
 
 app = typer.Typer(
     name="gleif",
@@ -79,22 +86,22 @@ def load(
     data_dir: DataDirOption = DEFAULT_DATA_DIR,
 ) -> None:
     """Load extracted CSVs into DuckDB."""
-    from gleif.download import (  # noqa: PLC0415
+    from gleif.download import (  # noqa: PLC0415 -- load-command-only symbols
         DownloadResult,
-        _find_extracted_csv,
-        _read_local_publish_date,
+        find_extracted_csv,
+        read_local_publish_date,
     )
 
     results: list[DownloadResult] = []
     for dt in DatasetType:
-        csv_path = _find_extracted_csv(data_dir, dt)
+        csv_path = find_extracted_csv(data_dir, dt)
         if csv_path is None:
             console.print(
                 f"[red]No extracted CSV found for {DATASET_LABELS[dt]}. "
                 f"Run 'gleif download' first.[/]"
             )
             raise typer.Exit(code=1)
-        publish_date = _read_local_publish_date(data_dir, dt) or "unknown"
+        publish_date = read_local_publish_date(data_dir, dt) or "unknown"
         results.append(
             DownloadResult(
                 csv_path=csv_path,
@@ -419,7 +426,7 @@ def _render_parent_section(
     isin_map: dict[str, list[str]] | None = None,
 ) -> None:
     """Render a parent entity as a compact line."""
-    from gleif.models import EntityInfo  # noqa: PLC0415
+    from gleif.models import EntityInfo  # noqa: PLC0415 -- runtime isinstance
 
     if not isinstance(parent, EntityInfo):
         return
@@ -466,14 +473,14 @@ def _format_node_label(
     isin_map: dict[str, list[str]],
 ) -> str:
     """Format a single hierarchy node label for tree display."""
-    from gleif.models import HierarchyNode  # noqa: PLC0415
+    from gleif.models import HierarchyNode  # noqa: PLC0415 -- runtime isinstance
 
     if not isinstance(node, HierarchyNode):
         return str(node)
     parts = [f"[cyan]{node.lei}[/]"]
     if node.legal_name:
         parts.append(f"[bold]{node.legal_name}[/]")
-    details = []
+    details: list[str] = []
     if node.legal_jurisdiction:
         details.append(node.legal_jurisdiction)
     if node.entity_status:
@@ -492,7 +499,6 @@ def _render_tree(
     isin_map: dict[str, list[str]] | None = None,
 ) -> None:
     """Render a corporate group as a Rich tree with DAG-aware dedup."""
-    from gleif.models import HierarchyNode  # noqa: PLC0415
 
     isin_map = isin_map or {}
 

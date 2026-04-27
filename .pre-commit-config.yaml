@@ -9,14 +9,16 @@ ci:
 repos:
   # General file checks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: c4a0b883114b00d8d76b479c820ce7950211c99b  # v4.5.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
         args: ['--allow-multiple-documents']
+        exclude: '^mkdocs\.yml$'
       - id: check-json
       - id: check-toml
+        exclude: '^\.qlty/qlty\.toml$'
       - id: check-added-large-files
         args: ['--maxkb=10000']
       - id: check-merge-conflict
@@ -27,7 +29,7 @@ repos:
 
   # Python linting and formatting with Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.4
+    rev: 740a8f85dd054f284b506c33d50b4b1f0d7d20d1  # v0.14.4
     hooks:
       - id: ruff
         args: ['--fix', '--exit-non-zero-on-fix']
@@ -35,26 +37,76 @@ repos:
 
   # Markdown linting
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
+    rev: 1d2f2483dbca436b5e89d208f1ff56688ba4af9e  # v0.38.0
     hooks:
       - id: markdownlint
         args: ['--fix', '--disable', 'MD013', 'MD033', 'MD041']
 
   # YAML linting
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.33.0
+    rev: 8713140e99914c0cb6e07364daedfb140847c3c5  # v1.33.0
     hooks:
       - id: yamllint
         args: ['-d', '{extends: default, rules: {line-length: {max: 120}}}']
 
   # Security scanning with Bandit
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.6
+    rev: f3a18ab30bc444e62d02505419ab7059cead0853  # 1.7.6
     hooks:
       - id: bandit
         args: ['-c', 'pyproject.toml']
         additional_dependencies: ['bandit[toml]']
         exclude: 'tests/.*'
+
+  # Static type checking with basedpyright (local: no upstream pre-commit-hooks.yaml)
+  - repo: local
+    hooks:
+      - id: basedpyright
+        name: basedpyright
+        language: system
+        entry: uv run basedpyright
+        types: [python]
+        pass_filenames: false
+
+  # Secret detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: 01886c8a910c64595c47f186ca1ffc0b77fa5458  # v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+
+  # Conventional commit message enforcement
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: a3498aba5e94c9f7c4acb529b5e7eb6df65fd053  # v3.29.1
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  # Docstring argument linting
+  - repo: https://github.com/terrencepreilly/darglint
+    rev: abc26b768cd7135d848223ba53f68323593c33d5
+    hooks:
+      - id: darglint
+        args: ["-s", "google", "--strictness", "short"]
+        exclude: '^tests/'
+
+  # Docstring coverage enforcement
+  - repo: https://github.com/econchick/interrogate
+    rev: f35a9d68f609d6ceed10f4286efc8d73b79b17cb
+    hooks:
+      - id: interrogate
+        args: ["-v", "--fail-under=80", "src/"]
+        pass_filenames: false
+
+  # Local hooks
+  - repo: local
+    hooks:
+      - id: no-em-dash
+        name: Forbid em-dash
+        language: pygrep
+        entry: "—"
+        types: [text]
+        exclude: "^(\\.git/|\\.pre-commit-config\\.yaml|docs/known-vulnerabilities\\.md)"
 
 exclude: |
   (?x)^(

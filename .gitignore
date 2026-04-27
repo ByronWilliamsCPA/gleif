@@ -12,3 +12,52 @@ wheels/
 # Claude Code configuration
 CLAUDE.md
 .claude/
+
+# Git worktrees
+.worktrees/
+
+# Environment and secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Database files
+*.duckdb
+*.duckdb.wal
+*.db
+*.sqlite
+*.sqlite3
+
+# Test coverage artifacts
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# Tool caches
+.ruff_cache/
+.mypy_cache/
+.mypy_cache/
+.basedpyright/
+
+# OS metadata and editor files
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# MkDocs build output
+site/
+
+# GLEIF ZIP downloads
+*.zip

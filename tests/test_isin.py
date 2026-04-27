@@ -55,7 +55,7 @@ class TestFetchIsins:
     def test_returns_empty_on_no_data(self, mock_get: MagicMock) -> None:
         mock_get.return_value = MagicMock(
             status_code=200,
-            json=lambda: {"data": []},
+            json=MagicMock(return_value={"data": []}),
         )
         result = fetch_isins("NOISINS00000000000001")
         assert result == []
@@ -73,8 +73,8 @@ class TestFetchIsinsBatch:
     @patch("gleif.isin.httpx.Client")
     def test_batch_returns_map(self, mock_client_cls: MagicMock) -> None:
         mock_client = MagicMock()
-        mock_client_cls.return_value.__enter__ = lambda _: mock_client
-        mock_client_cls.return_value.__exit__ = lambda *_args: None
+        mock_client_cls.return_value.__enter__.return_value = mock_client
+        mock_client_cls.return_value.__exit__.return_value = None
 
         def mock_get(url: str) -> MagicMock:
             if "LEI_A" in url:

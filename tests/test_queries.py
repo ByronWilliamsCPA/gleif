@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import duckdb
+from typing import TYPE_CHECKING
 
 from gleif.queries import (
     get_children,
@@ -14,6 +14,9 @@ from gleif.queries import (
     get_siblings,
     search_by_name,
 )
+
+if TYPE_CHECKING:
+    import duckdb
 
 
 class TestGetEntity:
