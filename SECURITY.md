@@ -30,5 +30,5 @@ what is present in the GLEIF golden copy datasets (which are public records).
 The primary security surface areas are:
 
 - **Dependency vulnerabilities**: tracked with `uv run pip-audit` and OSV Scanner
-- **ZIP path traversal**: mitigated in `download.py` via safe extraction logic
+- **ZIP path traversal**: mitigated in `download.py` via `resolve().is_relative_to()` check before extraction
 - **SQL injection**: mitigated by parameterized DuckDB queries in `queries.py`

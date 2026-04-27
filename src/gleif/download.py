@@ -160,6 +160,10 @@ def _extract_zip(zip_path: Path, extract_dir: Path) -> Path:
             msg = f"No CSV file found in {zip_path}"
             raise ValueError(msg)
         csv_name = csv_names[0]
+        dest = (extract_dir / csv_name).resolve()
+        if not dest.is_relative_to(extract_dir.resolve()):
+            msg = f"Path traversal attempt detected: {csv_name}"
+            raise ValueError(msg)
         zf.extract(csv_name, extract_dir)
         return extract_dir / csv_name
 
