@@ -137,7 +137,10 @@ _INDEXES = [
 
 
 def create_schema(con: duckdb.DuckDBPyConnection) -> None:
-    """Create all tables; indexes are created after loading.
+    """Create the load_metadata tracking table.
+
+    Data tables (lei_records, relationships, reporting_exceptions) are created
+    during loading via CREATE OR REPLACE TABLE ... AS SELECT ... FROM read_csv().
 
     Args:
         con: Open DuckDB connection.

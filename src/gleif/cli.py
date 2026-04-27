@@ -86,7 +86,7 @@ def load(
     data_dir: DataDirOption = DEFAULT_DATA_DIR,
 ) -> None:
     """Load extracted CSVs into DuckDB."""
-    from gleif.download import (  # noqa: PLC0415
+    from gleif.download import (  # noqa: PLC0415 -- load-command-only symbols
         DownloadResult,
         find_extracted_csv,
         read_local_publish_date,
@@ -426,7 +426,7 @@ def _render_parent_section(
     isin_map: dict[str, list[str]] | None = None,
 ) -> None:
     """Render a parent entity as a compact line."""
-    from gleif.models import EntityInfo  # noqa: PLC0415
+    from gleif.models import EntityInfo  # noqa: PLC0415 -- runtime isinstance
 
     if not isinstance(parent, EntityInfo):
         return
@@ -473,7 +473,7 @@ def _format_node_label(
     isin_map: dict[str, list[str]],
 ) -> str:
     """Format a single hierarchy node label for tree display."""
-    from gleif.models import HierarchyNode  # noqa: PLC0415
+    from gleif.models import HierarchyNode  # noqa: PLC0415 -- runtime isinstance
 
     if not isinstance(node, HierarchyNode):
         return str(node)

@@ -47,7 +47,7 @@ CLI tests use `typer.testing.CliRunner` with on-disk DuckDB files in `tmp_path`.
 
 | Scope | Threshold |
 | ----- | --------- |
-| Line coverage | 80% |
+| Line coverage | 65% |
 | Branch coverage | 70% |
 | Critical paths | 90% |
 | New patches | 90% |
@@ -65,7 +65,7 @@ uv run ruff check --fix .
 uv run basedpyright src
 ```
 
-Ruff is configured with the PyStrict-aligned rule set at 88-character line length. BasedPyright runs in `standard` mode with strict inference for lists, dicts, and sets.
+Ruff is configured with the PyStrict-aligned rule set at 88-character line length. BasedPyright runs in `strict` mode with strict inference for lists, dicts, and sets.
 
 ## Pre-commit hooks
 
@@ -114,7 +114,7 @@ Three GitHub Actions workflows run on every PR and push to `main`:
 
 Runs on PRs and pushes to `main` and `develop`.
 
-1. **Test suite**: pytest with 80% coverage gate
+1. **Test suite**: pytest with 65% coverage gate
 2. **Quality checks**: `ruff format --check`, `ruff check`, `basedpyright`
 3. **CI gate**: blocks merge if any step fails
 
@@ -139,7 +139,7 @@ Qlty also runs locally via pre-commit hooks:
 
 ## Security
 
-Dependencies are scanned by `pip-audit` and OSV scanner on every CI run. Any unfixed CVEs must be documented in `docs/known-vulnerabilities.md` following the template in `docs/known-vulnerabilities-template.md`.
+Dependencies are scanned by `dependency-review` (on PRs) and `osv-scanner` (security workflow, not every CI run). Run `uv run pip-audit` locally for on-demand scanning. Any unfixed CVEs must be documented in `docs/known-vulnerabilities.md` following the template in `docs/known-vulnerabilities-template.md`.
 
 Never suppress `pip-audit` output without a documented entry. Entries age out after 60 days and block releases if unaddressed.
 

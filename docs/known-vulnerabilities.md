@@ -3,7 +3,7 @@
 No known vulnerabilities are currently tracked.
 
 Review quarterly. No entry should age past 60 days without reassessment.
-The OpenSSF release gate blocks releases for any vulnerability older than
-60 days regardless of reassessment status.
+By policy, vulnerabilities older than 60 days block releases; review this file
+before tagging any release.
 
 Last reviewed: 2026-04-24
