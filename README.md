@@ -4,11 +4,11 @@ A CLI that downloads [GLEIF](https://www.gleif.org) golden copy datasets, loads 
 local [DuckDB](https://duckdb.org) database, and lets you query LEI relationship hierarchies
 from the command line.
 
-```
+```shell
 gleif lei 2138005YL12BKW2FQA89
 ```
 
-```
+```text
 Entity          APPLE INC.
 LEI             2138005YL12BKW2FQA89
 Status          ACTIVE

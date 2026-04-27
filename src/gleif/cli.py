@@ -25,11 +25,15 @@ from gleif.isin import fetch_isins_batch
 from gleif.queries import get_corporate_group, get_full_report, search_by_name
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from gleif.models import (
         CorporateGroup,
+        EntityInfo,
         HierarchyNode,
         LEIRelationshipReport,
         RelatedEntity,
+        ReportingException,
     )
 
 app = typer.Typer(
@@ -38,6 +42,7 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+_FETCHING_ISINS_MSG = "[dim]Fetching ISINs from GLEIF API...[/]"
 
 DataDirOption = Annotated[
     Path,
@@ -192,7 +197,7 @@ def lei(
         isin_map: dict[str, list[str]] = {}
         if isin:
             all_leis = list({n.lei for n in group.descendants})
-            console.print("[dim]Fetching ISINs from GLEIF API...[/]")
+            console.print(_FETCHING_ISINS_MSG)
             isin_map = fetch_isins_batch(all_leis)
 
         _render_tree(group, isin_map=isin_map)
@@ -205,7 +210,7 @@ def lei(
     isin_map_flat: dict[str, list[str]] = {}
     if isin:
         all_leis = _collect_report_leis(report)
-        console.print("[dim]Fetching ISINs from GLEIF API...[/]")
+        console.print(_FETCHING_ISINS_MSG)
         isin_map_flat = fetch_isins_batch(all_leis)
 
     _render_report(report, isin_map=isin_map_flat)
@@ -240,7 +245,7 @@ def name(
 
     isin_map: dict[str, list[str]] = {}
     if isin:
-        console.print("[dim]Fetching ISINs from GLEIF API...[/]")
+        console.print(_FETCHING_ISINS_MSG)
         isin_map = fetch_isins_batch([e.lei for e in results])
 
     table = Table(
@@ -341,16 +346,11 @@ def _format_isins(isin_map: dict[str, list[str]], lei_code: str) -> str:
     return ", ".join(isins) if isins else ""
 
 
-def _render_report(
-    report: LEIRelationshipReport,
-    *,
-    isin_map: dict[str, list[str]] | None = None,
+def _render_entity_panel(
+    entity: EntityInfo,
+    isin_map: dict[str, list[str]],
 ) -> None:
-    """Render a full LEI relationship report to the console."""
-    entity = report.entity
-    isin_map = isin_map or {}
-
-    # Entity info panel
+    """Render the top-level entity info panel."""
     info_lines = [
         f"[bold]Name:[/]          {entity.legal_name}",
         f"[bold]Status:[/]        {entity.entity_status}",
@@ -375,49 +375,59 @@ def _render_report(
         )
     )
 
-    # Direct parent
+
+def _render_exceptions_table(exceptions: Sequence[ReportingException]) -> None:
+    """Render reporting exceptions as a Rich table."""
+    table = Table(title="Reporting Exceptions", border_style="yellow")
+    table.add_column("Category", style="yellow")
+    table.add_column("Reason")
+    table.add_column("Reference")
+    for exc in exceptions:
+        table.add_row(
+            exc.exception_category,
+            exc.exception_reason or "",
+            exc.exception_reference or "",
+        )
+    console.print(table)
+
+
+def _render_report(
+    report: LEIRelationshipReport,
+    *,
+    isin_map: dict[str, list[str]] | None = None,
+) -> None:
+    """Render a full LEI relationship report to the console."""
+    isin_map = isin_map or {}
+
+    _render_entity_panel(report.entity, isin_map)
+
     if report.direct_parent:
         _render_parent_section("Direct Parent", report.direct_parent, isin_map)
     else:
         console.print("[dim]Direct Parent: None[/]")
 
-    # Ultimate parent
     if report.ultimate_parent:
         _render_parent_section("Ultimate Parent", report.ultimate_parent, isin_map)
     else:
         console.print("[dim]Ultimate Parent: None[/]")
 
-    # Children
     if report.children:
         _render_related_table("Children", report.children, isin_map)
     else:
         console.print("[dim]Children: None[/]")
 
-    # Siblings
     if report.siblings:
         _render_related_table("Siblings", report.siblings, isin_map)
     else:
         console.print("[dim]Siblings: None[/]")
 
-    # Other relationships
     if report.other_relationships:
         _render_related_table(
             "Other Relationships", report.other_relationships, isin_map
         )
 
-    # Reporting exceptions
     if report.reporting_exceptions:
-        table = Table(title="Reporting Exceptions", border_style="yellow")
-        table.add_column("Category", style="yellow")
-        table.add_column("Reason")
-        table.add_column("Reference")
-        for exc in report.reporting_exceptions:
-            table.add_row(
-                exc.exception_category,
-                exc.exception_reason or "",
-                exc.exception_reference or "",
-            )
-        console.print(table)
+        _render_exceptions_table(report.reporting_exceptions)
 
 
 def _render_parent_section(
