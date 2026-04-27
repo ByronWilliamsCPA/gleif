@@ -24,7 +24,7 @@ uv run gleif --help
 
 ## First run
 
-The datasets are large (the Level 1 LEI file is ~800 MB compressed). Allow 5-10 minutes for the initial download on a typical broadband connection.
+The datasets are large (the Level 1 LEI file alone is ~800 MB compressed). Allow 5-10 minutes for the initial download on a typical broadband connection.
 
 !!! warning "Disk space"
     The initial refresh requires approximately 2 GB of free disk space: ~835 MB for the three ZIP archives during download, plus ~1 GB for the loaded DuckDB database. The ZIPs are deleted after extraction, leaving ~1 GB in use at steady state.
