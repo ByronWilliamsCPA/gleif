@@ -9,6 +9,13 @@ wheels/
 # Virtual environments
 .venv
 
+# MkDocs build output
+site/
+
+# Test artifacts
+.coverage
+htmlcov/
+
 # Claude Code configuration
 CLAUDE.md
 .claude/

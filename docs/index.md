@@ -43,8 +43,8 @@ gleif status
 
 ## Navigation
 
-- [Getting Started](getting-started.md): installation, first run, freshness checks
-- [CLI Reference](cli-reference.md): all commands, options, and exit codes
-- [Architecture](architecture/index.md): data pipeline, module map, design decisions
-- [Data Model & Schema](architecture/data-model.md): DuckDB tables, column mappings, relationship conventions
-- [Development](development.md): local setup, testing, linting, CI/CD
+- [Getting Started](getting-started.md) — installation, first run, freshness checks
+- [CLI Reference](cli-reference.md) — all commands, options, and exit codes
+- [Architecture](architecture/index.md) — data pipeline, module map, design decisions
+- [Data Model & Schema](architecture/data-model.md) — DuckDB tables, column mappings, relationship conventions
+- [Development](development.md) — local setup, testing, linting, CI/CD

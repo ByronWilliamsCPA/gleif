@@ -33,19 +33,16 @@ uv run gleif refresh
 
 Output:
 
-```
+```text
 Refreshing GLEIF data...
   Level 1 - LEI Records ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 823 MB  4.2 MB/s
   Level 2 - Relationships ━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100%  12 MB  4.1 MB/s
   Level 2 - Reporting Exceptions ━━━━━━━━━━━━━━━━━━━━ 100%   3 MB  4.0 MB/s
 
 Loading into ~/.local/share/gleif/gleif.duckdb...
-  Loading Level 1 - LEI Records from 20240401-gleif-goldencopy-lei2-...csv...
-    2,381,240 rows loaded
-  Loading Level 2 - Relationships from ...csv...
-    4,012,887 rows loaded
-  Loading Level 2 - Reporting Exceptions from ...csv...
-    521,044 rows loaded
+  Loading Level 1 - LEI Records...    2,381,240 rows loaded
+  Loading Level 2 - Relationships...  4,012,887 rows loaded
+  Loading Level 2 - Reporting Exceptions...  521,044 rows loaded
   Creating indexes...
   Done.
 Refresh complete.
@@ -82,17 +79,6 @@ Check when your data was last loaded:
 
 ```bash
 uv run gleif status
-```
-
-```
-             GLEIF Database Status
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
-┃ Dataset                         ┃ Publish Date ┃ Loaded At           ┃   Records ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
-│ Level 1 - LEI Records           │ 2024-04-01   │ 2024-04-02 08:14:05 │ 2,381,240 │
-│ Level 2 - Relationships         │ 2024-04-01   │ 2024-04-02 08:14:05 │ 4,012,887 │
-│ Level 2 - Reporting Exceptions  │ 2024-04-01   │ 2024-04-02 08:14:05 │   521,044 │
-└─────────────────────────────────┴──────────────┴─────────────────────┴───────────┘
 ```
 
 ## Your first LEI lookup

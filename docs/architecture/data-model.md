@@ -55,8 +55,6 @@ Populated from the Level 1 LEI dataset. The full CSV has 338 columns; only the c
 | `validation_sources` | VARCHAR | `Registration.ValidationSources` | |
 | `conformity_flag` | VARCHAR | `ConformityFlag` | |
 
-**Indexes:** none (primary key lookup only via DuckDB's hash join on VARCHAR PK)
-
 ---
 
 ## `relationships` table
@@ -92,8 +90,8 @@ Populated from the Level 2 Relationships dataset.
 
 **Indexes:**
 
-| Index | Column(s) |
-| ----- | --------- |
+| Index | Column |
+| ----- | ------ |
 | `idx_rel_start` | `start_node_id` |
 | `idx_rel_end` | `end_node_id` |
 | `idx_rel_type` | `relationship_type` |
@@ -105,8 +103,8 @@ Populated from the Level 2 Relationships dataset.
 
 ### Relationship types
 
-| Type constant | Value | Meaning |
-| ------------- | ----- | ------- |
+| Constant | Value | Meaning |
+| -------- | ----- | ------- |
 | `DIRECT_PARENT` | `IS_DIRECTLY_CONSOLIDATED_BY` | Immediate parent entity |
 | `ULTIMATE_PARENT` | `IS_ULTIMATELY_CONSOLIDATED_BY` | Top-level parent in the ownership chain |
 
@@ -116,7 +114,7 @@ Non-consolidation types (branches, funds, etc.) appear in the `other_relationshi
 
 ## `reporting_exceptions` table
 
-Populated from the Level 2 Reporting Exceptions dataset. An exception record means the entity cannot or does not report its ownership relationships.
+An exception record means the entity cannot or does not report its ownership relationships.
 
 | Column | Type | Source CSV field |
 | ------ | ---- | ---------------- |
@@ -129,14 +127,7 @@ Populated from the Level 2 Reporting Exceptions dataset. An exception record mea
 
 **Index:** `idx_repex_lei` on `lei`
 
-### Exception categories
-
-| Category | Meaning |
-| -------- | ------- |
-| `DIRECT_ACCOUNTING_CONSOLIDATION_PARENT` | No direct parent to report |
-| `ULTIMATE_ACCOUNTING_CONSOLIDATION_PARENT` | No ultimate parent to report |
-
-Common reasons include `NON_PUBLIC`, `LEGAL_OBSTACLES`, `BINDING_LEGAL_COMMITMENTS`, `NATURAL_PERSONS`, and `NO_KNOWN_PERSON`.
+Common exception categories: `DIRECT_ACCOUNTING_CONSOLIDATION_PARENT`, `ULTIMATE_ACCOUNTING_CONSOLIDATION_PARENT`. Common reasons: `NON_PUBLIC`, `LEGAL_OBSTACLES`, `NATURAL_PERSONS`, `NO_KNOWN_PERSON`.
 
 ---
 
@@ -155,7 +146,7 @@ Tracks when each dataset was last loaded.
 
 ## Python data model
 
-Query functions return frozen dataclasses from `models.py`.
+Query functions in `queries.py` return frozen dataclasses from `models.py`:
 
 ```python
 @dataclass(frozen=True)
@@ -177,7 +168,7 @@ class RelatedEntity:
     legal_name: str | None
     relationship_type: str
     relationship_status: str
-    direction: str          # "parent" | "child" | "sibling" | "other"
+    direction: str  # "parent" | "child" | "sibling" | "other"
 
 @dataclass(frozen=True)
 class ReportingException:
@@ -189,7 +180,7 @@ class ReportingException:
 class HierarchyNode:
     lei: str
     legal_name: str | None
-    depth: int              # 0 = starting entity, 1 = parent, etc.
+    depth: int  # 0 = starting entity, 1 = parent, etc.
     entity_status: str | None
     entity_category: str | None
     legal_jurisdiction: str | None

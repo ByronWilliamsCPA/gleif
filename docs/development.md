@@ -14,7 +14,7 @@ uv run pre-commit install
 
 ## Running tests
 
-Tests use in-memory DuckDB with CSV fixtures defined in `tests/conftest.py`. They do not require downloading GLEIF data.
+Tests use in-memory DuckDB with CSV fixtures in `tests/conftest.py`. No downloaded GLEIF data is required.
 
 ```bash
 # Run all tests with coverage
@@ -26,15 +26,15 @@ uv run pytest tests/test_queries.py
 # Single test
 uv run pytest tests/test_queries.py::TestGetEntity::test_finds_existing_entity
 
-# Show coverage report
+# Open HTML coverage report
 uv run pytest --cov-report=html && open htmlcov/index.html
 ```
 
-### Test fixtures
+### Test fixture hierarchy
 
-The `loaded_db` fixture in `conftest.py` provides a pre-populated in-memory DuckDB with four entities forming a hierarchy:
+The `loaded_db` fixture provides a pre-populated in-memory DuckDB with four entities:
 
-```
+```text
 Ultimate Parent
     └── Parent
             ├── Child A
@@ -47,7 +47,7 @@ CLI tests use `typer.testing.CliRunner` with on-disk DuckDB files in `tmp_path`.
 
 | Scope | Threshold |
 | ----- | --------- |
-| Line coverage | 65% |
+| Line coverage | 80% |
 | Branch coverage | 70% |
 | Critical paths | 90% |
 | New patches | 90% |
@@ -55,27 +55,20 @@ CLI tests use `typer.testing.CliRunner` with on-disk DuckDB files in `tmp_path`.
 ## Linting and type checking
 
 ```bash
-# Format code
-uv run ruff format .
-
-# Lint and auto-fix
-uv run ruff check --fix .
-
-# Type check
-uv run basedpyright src
+uv run ruff format .            # Format code
+uv run ruff check --fix .       # Lint and auto-fix
+uv run basedpyright src         # Type check
 ```
 
-Ruff is configured with the PyStrict-aligned rule set at 88-character line length. BasedPyright runs in `strict` mode with strict inference for lists, dicts, and sets.
+Ruff uses the PyStrict-aligned rule set at 88-character line length. BasedPyright runs in `standard` mode with strict inference for lists, dicts, and sets.
 
 ## Pre-commit hooks
 
-Pre-commit runs automatically on every commit. To run all hooks manually:
+Pre-commit runs automatically on every commit. To run manually:
 
 ```bash
 uv run pre-commit run --all-files
 ```
-
-Configured hooks:
 
 | Hook | Purpose |
 | ---- | ------- |
@@ -91,20 +84,12 @@ Configured hooks:
 ## Building the documentation
 
 ```bash
-# Install docs dependencies (if not already installed)
-uv sync --all-extras
-
-# Serve locally with live reload
-uv run mkdocs serve
-
-# Build static site
-uv run mkdocs build
-
-# Deploy to GitHub Pages
-uv run mkdocs gh-deploy
+uv run mkdocs serve     # Live-reload local preview
+uv run mkdocs build     # Build static site to site/
+uv run mkdocs gh-deploy # Deploy to GitHub Pages
 ```
 
-The site is built into `site/` (gitignored).
+The `site/` output directory is gitignored.
 
 ## CI/CD
 
@@ -112,43 +97,31 @@ Three GitHub Actions workflows run on every PR and push to `main`:
 
 ### CI (`ci.yml`)
 
-Runs on PRs and pushes to `main` and `develop`.
-
-1. **Test suite**: pytest with 65% coverage gate
-2. **Quality checks**: `ruff format --check`, `ruff check`, `basedpyright`
-3. **CI gate**: blocks merge if any step fails
+1. Test suite with 80% coverage gate
+2. Quality checks: `ruff format --check`, `ruff check`, `basedpyright`
+3. CI gate that blocks merge on any failure
 
 All action steps are pinned to commit SHAs.
 
 ### Security (`security-analysis.yml`)
 
-Runs on PRs and weekly on a schedule (separate from CI to save ~5-8 min per PR).
+Runs on PRs and weekly on a schedule (separate workflow to save ~5-8 min per PR):
 
-1. **CodeQL**: static analysis for Python vulnerabilities
-2. **Dependency review**: license compliance (GPL denied) and known CVEs
-3. **Bandit**: Python security linting
-4. **OSV scanner**: dependency vulnerability scanning
+1. CodeQL static analysis
+2. Dependency review (GPL denied, known CVEs blocked)
+3. Bandit security linting
+4. OSV dependency vulnerability scanning
 
 ### Qlty (`qlty.yml`)
 
-Triggered after CI succeeds. Uploads `coverage.xml` to [Qlty Cloud](https://qlty.sh/) for coverage trend tracking and code quality analysis.
+Triggered after CI succeeds. Uploads `coverage.xml` to Qlty Cloud for coverage trend tracking.
 
-Qlty also runs locally via pre-commit hooks:
-- `qlty fmt` on pre-commit (auto-formats staged files)
-- `qlty check` on pre-push (runs the full plugin suite)
-
-## Security
-
-Dependencies are scanned by `dependency-review` (on PRs) and `osv-scanner` (security workflow, not every CI run). Run `uv run pip-audit` locally for on-demand scanning. Any unfixed CVEs must be documented in `docs/known-vulnerabilities.md` following the template in `docs/known-vulnerabilities-template.md`.
-
-Never suppress `pip-audit` output without a documented entry. Entries age out after 60 days and block releases if unaddressed.
+Qlty also runs locally via pre-commit: `qlty fmt` on pre-commit (auto-format staged files), `qlty check` on pre-push.
 
 ## Release checklist
 
-Before tagging a release:
-
-- [ ] `CHANGELOG.md` updated with the release version and date
+- [ ] `CHANGELOG.md` updated with version and date
 - [ ] All tests pass above coverage thresholds
-- [ ] No vulnerabilities older than 60 days in `docs/known-vulnerabilities.md`
-- [ ] Version tag follows SemVer (`v0.1.0`, `v1.0.0`, etc.)
+- [ ] No vulnerabilities older than 60 days
 - [ ] `uv run pre-commit run --all-files` passes cleanly
+- [ ] Version tag follows SemVer (`v0.1.0`, `v1.0.0`, etc.)

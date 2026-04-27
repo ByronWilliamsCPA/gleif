@@ -2,7 +2,7 @@
 
 All commands are run via `uv run gleif <command>` (or `gleif <command>` if installed globally).
 
-```
+```text
 Usage: gleif [OPTIONS] COMMAND [ARGS]...
 
   GLEIF Golden Copy data loader and LEI relationship query CLI.
@@ -32,10 +32,8 @@ Commands:
 
 Download and extract all three GLEIF golden copy datasets from the golden copy API.
 
-```
+```text
 Usage: gleif download [OPTIONS]
-
-  Download and extract all GLEIF golden copy datasets.
 
 Options:
   --data-dir PATH  Directory for downloaded data files.
@@ -49,9 +47,9 @@ Before downloading, the command sends a HEAD request to check the `x-gleif-publi
 
 ### Output files
 
-Each dataset is downloaded as a ZIP, extracted to a CSV, and the ZIP is deleted. The extracted CSV names follow the GLEIF convention:
+Each dataset is downloaded as a ZIP, extracted to a CSV, and the ZIP is deleted. Extracted CSV names follow the GLEIF convention:
 
-```
+```text
 <date>-gleif-goldencopy-lei2-full-publish.csv
 <date>-gleif-goldencopy-rr-full-publish.csv
 <date>-gleif-goldencopy-repex-full-publish.csv
@@ -61,12 +59,10 @@ Each dataset is downloaded as a ZIP, extracted to a CSV, and the ZIP is deleted.
 
 ## `gleif load`
 
-Load already-extracted CSVs into DuckDB. Use this when you have CSVs but do not need to re-download (e.g., after a network interruption that left CSVs intact).
+Load already-extracted CSVs into DuckDB. Useful when CSVs are intact but you need to reload (e.g., after a schema change).
 
-```
+```text
 Usage: gleif load [OPTIONS]
-
-  Load extracted CSVs into DuckDB.
 
 Options:
   --db PATH        Path to the DuckDB database file.
@@ -83,10 +79,8 @@ Options:
 
 Combines `download` and `load` in a single step. This is the recommended way to update your local database.
 
-```
+```text
 Usage: gleif refresh [OPTIONS]
-
-  Download and load GLEIF data in one step.
 
 Options:
   --db PATH        Path to the DuckDB database file.
@@ -101,10 +95,8 @@ Options:
 
 Look up a single LEI and display its relationship report or corporate hierarchy tree.
 
-```
+```text
 Usage: gleif lei [OPTIONS] LEI_CODE
-
-  Look up an LEI and display all related entities.
 
 Arguments:
   LEI_CODE  The LEI to look up. Must be exactly 20 characters.  [required]
@@ -119,9 +111,9 @@ Options:
 
 ### Default output (flat report)
 
-Without `--tree`, the command displays a structured report with sections for:
+Without `--tree`, the command displays a structured report with:
 
-- **Entity panel**: LEI, legal name, status, category, jurisdiction, addresses, registration status, and optionally ISINs
+- **Entity panel**: LEI, legal name, status, category, jurisdiction, addresses, registration status
 - **Direct Parent**: The entity that directly consolidates this one (`IS_DIRECTLY_CONSOLIDATED_BY`)
 - **Ultimate Parent**: The top-level consolidating entity (`IS_ULTIMATELY_CONSOLIDATED_BY`)
 - **Children**: All entities that report this LEI as their direct or ultimate parent
@@ -131,11 +123,11 @@ Without `--tree`, the command displays a structured report with sections for:
 
 ### Tree output (`--tree`)
 
-With `--tree`, the command walks the full corporate hierarchy from the ultimate parent down to all descendants, rendered as a Rich tree. DAG structures (entities with multiple parents) are deduplicated: the first occurrence is shown in full; later references show `(see above)`.
+Walks the full corporate hierarchy from the ultimate parent down to all descendants, rendered as a Rich tree. Diamond structures (entities with multiple parents) are deduplicated: the first occurrence is shown in full; later references show `(see above)`.
 
 ### ISIN lookup (`--isin`)
 
-When `--isin` is passed, the CLI fetches ISINs from the GLEIF REST API (`/lei-records/{lei}/isins`) for all LEIs in the report or tree. This makes additional HTTP requests and may add a few seconds to the response time.
+Fetches ISINs from the GLEIF REST API (`/lei-records/{lei}/isins`) for all LEIs in the report or tree. Makes additional HTTP requests; expect a few seconds of latency.
 
 ### Exit codes
 
@@ -150,10 +142,8 @@ When `--isin` is passed, the CLI fetches ISINs from the GLEIF REST API (`/lei-re
 
 Search for entities by legal name using a case-insensitive substring match.
 
-```
+```text
 Usage: gleif name [OPTIONS] QUERY
-
-  Search for entities by legal name (case-insensitive substring match).
 
 Arguments:
   QUERY  Name or substring to search for.  [required]
@@ -165,13 +155,11 @@ Options:
   --help           Show this message and exit.
 ```
 
-### Example
+Results are displayed in a table with columns: LEI, Legal Name, Jurisdiction, Status. Passing `--isin` adds an ISINs column.
 
 ```bash
 gleif name "volkswagen" --limit 20
 ```
-
-Results are displayed in a table with columns: LEI, Legal Name, Jurisdiction, Status. Passing `--isin` adds an ISINs column.
 
 ---
 
@@ -179,10 +167,8 @@ Results are displayed in a table with columns: LEI, Legal Name, Jurisdiction, St
 
 Display the current state of the local DuckDB database.
 
-```
+```text
 Usage: gleif status [OPTIONS]
-
-  Show database status: record counts and data freshness.
 
 Options:
   --db PATH  Path to the DuckDB database file.
