@@ -29,10 +29,11 @@ uv run pytest tests/test_queries.py::TestGetEntity::test_finds_existing_entity
 # Run all tests with coverage report
 uv run pytest --cov-report=html
 
-# Open the HTML report (macOS: open, Linux: xdg-open, Windows: start)
-open htmlcov/index.html      # macOS
-xdg-open htmlcov/index.html  # Linux
-start htmlcov/index.html     # Windows (Git Bash / WSL)
+# Open the HTML report (run the one for your platform)
+open htmlcov/index.html          # macOS
+xdg-open htmlcov/index.html      # Linux
+start htmlcov/index.html         # Windows (Git Bash only)
+explorer.exe htmlcov/index.html  # WSL
 ```
 
 ### Test fixture hierarchy
