@@ -71,7 +71,7 @@ uv run gleif download --force
 produces an error and exits with code 1:
 
 ```text
-Error: No CSV found for dataset 'lei2'. Run 'gleif download' first.
+No extracted CSV found for Level 1 - LEI Records. Run 'gleif download' first.
 ```
 
 **Cause:** `gleif load` expects the extracted CSVs to already exist in the
@@ -151,8 +151,8 @@ store does not recognize.
 
 **Fix:**
 
-Set the `HTTPX_CA_BUNDLE` or `SSL_CERT_FILE` environment variable to point to
-your corporate CA bundle:
+Set the `SSL_CERT_FILE` environment variable to point to your corporate CA
+bundle:
 
 ```bash
 export SSL_CERT_FILE=/path/to/corporate-ca-bundle.pem
@@ -168,10 +168,10 @@ uv run gleif refresh
 ```
 
 !!! warning
-    Do not disable SSL verification entirely. Passing `verify=False` or setting
-    `CURL_CA_BUNDLE` to an empty path removes all certificate validation and
-    exposes you to network-level attacks. Contact your network team for the
-    correct CA bundle instead.
+    Do not disable SSL verification entirely. Passing `verify=False` to httpx
+    removes all certificate validation, which exposes the connection to
+    man-in-the-middle attacks. Contact your network team for the correct CA
+    bundle instead.
 
 ---
 
@@ -219,16 +219,24 @@ local copy is already current, it exits quickly without re-downloading.
 
 ## Database does not exist yet
 
-**Symptom:** Querying with `gleif lei` or `gleif name` before loading any data
-produces:
+The behavior differs depending on which command you run:
+
+**`gleif status` on a missing database:** The command checks whether the
+database file exists and exits immediately with:
 
 ```text
-Error: Database not found. Run 'gleif refresh' to download and load data.
+Database not found at <path>. Run 'gleif refresh' first.
 ```
+
+**`gleif lei` / `gleif name` on a missing or empty database:** These commands
+do not check for the database file before connecting. `duckdb.connect()`
+silently creates an empty file if none exists, so queries return empty results
+rather than an error. `gleif lei` reports the LEI as not found, and `gleif name`
+returns an empty results list.
 
 **Fix:**
 
-Run the initial load:
+Run the initial load before querying:
 
 ```bash
 uv run gleif refresh
