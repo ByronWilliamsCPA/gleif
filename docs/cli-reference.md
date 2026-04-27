@@ -184,7 +184,7 @@ gleif name "volkswagen" --limit 20
 
 ### Match behavior
 
-Queries use a case-insensitive substring match (`ILIKE '%query%'`) against the `legal_name` column, using DuckDB's default collation. Results are ordered alphabetically by legal name. Passing `--limit` caps the result count; the default is 100.
+Queries use a parameterized case-insensitive substring match (`ILIKE $1` with bind value `%query%`) against the `legal_name` column, using DuckDB's default collation. Results are ordered alphabetically by legal name. Passing `--limit` caps the result count; the default is 100.
 
 ### Exit codes
 
