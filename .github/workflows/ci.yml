@@ -115,6 +115,9 @@ jobs:
       - name: Type checking (BasedPyright strict)
         run: uv run basedpyright src
 
+      - name: Build documentation (strict)
+        run: uv run mkdocs build --strict
+
   ci-gate:
     name: CI Gate
     runs-on: ubuntu-latest
