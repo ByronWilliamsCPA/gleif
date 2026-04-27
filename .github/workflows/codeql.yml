@@ -13,6 +13,7 @@ on:
     branches: ["main"]
   schedule:
     - cron: '19 5 * * 4'  # Weekly Thursday 5:19 AM UTC
+  workflow_dispatch:
 
 permissions: read-all
 
@@ -43,6 +44,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         if: matrix.language == 'python'
