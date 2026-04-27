@@ -1,9 +1,9 @@
 # GLEIF Golden Copy CLI - Security Analysis
 #
 # Centralized security scanning, separate from CI for performance (~5-8 min savings per PR).
+# CodeQL is handled by codeql.yml (advanced setup required by GitHub Code Security).
 #
 # SCANS:
-#   - CodeQL: Python security-extended and quality queries
 #   - Dependency Review: PR-based dependency vulnerability detection
 #   - Bandit: Python static security analysis
 #   - OSV Scanner: Vulnerability detection (matches OpenSSF Scorecard)
@@ -46,57 +46,6 @@ jobs:
               - '.github/workflows/security-analysis.yml'
               - 'pyproject.toml'
               - 'uv.lock'
-
-  codeql-analysis:
-    name: CodeQL Security Analysis
-    runs-on: ubuntu-latest
-    needs: detect-changes
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: '3.11'
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install dependencies
-        run: uv sync --no-dev
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
-        with:
-          languages: python
-          queries: security-extended,security-and-quality
-          config: |
-            paths:
-              - src
-            paths-ignore:
-              - tests
-
-      - name: Build CodeQL Database
-        uses: github/codeql-action/autobuild@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@95e58e9a2cdfd71adc6e0353d5c52f41a045d225 # v4.35.2
-        with:
-          category: "/language:python"
-          upload: true
 
   dependency-security:
     name: Dependency Security Review
@@ -242,7 +191,7 @@ jobs:
   security-gate:
     name: Security Gate
     runs-on: ubuntu-latest
-    needs: [detect-changes, codeql-analysis, dependency-security, security-scanning, osv-scanner]
+    needs: [detect-changes, dependency-security, security-scanning, osv-scanner]
     if: always()
     steps:
       - name: Security Gate Results
@@ -251,14 +200,12 @@ jobs:
             [[ "$1" == "success" || "$1" == "skipped" ]]
           }
 
-          if is_acceptable "${{ needs.codeql-analysis.result }}" && \
-             is_acceptable "${{ needs.dependency-security.result }}" && \
+          if is_acceptable "${{ needs.dependency-security.result }}" && \
              is_acceptable "${{ needs.security-scanning.result }}" && \
              is_acceptable "${{ needs.osv-scanner.result }}"; then
             echo "Security gate passed"
           else
             echo "Security gate failed"
-            echo "codeql: ${{ needs.codeql-analysis.result }}"
             echo "dependency-security: ${{ needs.dependency-security.result }}"
             echo "security-scanning: ${{ needs.security-scanning.result }}"
             echo "osv-scanner: ${{ needs.osv-scanner.result }}"
