@@ -136,3 +136,10 @@ level = "ignore"
 rule = "semgrep:sql-injection-format-string"
 level = "ignore"
 path = "src/gleif/db.py"
+
+# MkDocs admonitions require 4-space-indented fenced code blocks; markdownlint
+# treats these as "indented style" mixed with fenced, producing false positives
+[[triage]]
+rule = "markdownlint:MD046"
+level = "ignore"
+path = "docs/**"

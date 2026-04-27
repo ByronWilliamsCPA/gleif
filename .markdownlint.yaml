@@ -19,3 +19,7 @@ MD051: false
 
 # Multiple top-level headings - disabled
 MD025: false
+
+# Code block style - disabled; MkDocs admonitions require 4-space-indented fenced
+# blocks which markdownlint treats as "indented style" mixed with fenced style
+MD046: false

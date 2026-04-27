@@ -130,10 +130,12 @@ uv run gleif refresh --data-dir /mnt/large-disk/gleif --db /mnt/large-disk/gleif
     be in a partially written state. Delete it and reload to ensure a clean
     database:
 
+    <!-- markdownlint-disable MD046 -->
     ```bash
     rm ~/.local/share/gleif/gleif.duckdb
     uv run gleif load
     ```
+    <!-- markdownlint-enable MD046 -->
 
 ---
 
