@@ -59,7 +59,7 @@ jobs:
           fail-on-severity: moderate
           license-check: true
           comment-summary-in-pr: always
-          deny-licenses: GPL-2.0, GPL-3.0
+          deny-license-types: GPL-2.0, GPL-3.0
 
   security-scanning:
     name: Bandit Security Scan
@@ -133,8 +133,13 @@ jobs:
 
       - name: Check OSV Results for HIGH/CRITICAL
         run: |
+          if [ "${{ steps.osv-scan.outcome }}" != "success" ] && { [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; }; then
+            echo "OSV scanner failed before producing results"
+            exit 1
+          fi
+
           if [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; then
-            echo "No OSV results file found or file is empty"
+            echo "No vulnerabilities found"
             exit 0
           fi
 
@@ -194,12 +199,14 @@ jobs:
             [[ "$1" == "success" || "$1" == "skipped" ]]
           }
 
-          if is_acceptable "${{ needs.dependency-security.result }}" && \
+          if is_acceptable "${{ needs.detect-changes.result }}" && \
+             is_acceptable "${{ needs.dependency-security.result }}" && \
              is_acceptable "${{ needs.security-scanning.result }}" && \
              is_acceptable "${{ needs.osv-scanner.result }}"; then
             echo "Security gate passed"
           else
             echo "Security gate failed"
+            echo "detect-changes: ${{ needs.detect-changes.result }}"
             echo "dependency-security: ${{ needs.dependency-security.result }}"
             echo "security-scanning: ${{ needs.security-scanning.result }}"
             echo "osv-scanner: ${{ needs.osv-scanner.result }}"

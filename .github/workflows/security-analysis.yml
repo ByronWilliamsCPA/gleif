@@ -30,4 +30,3 @@ jobs:
       pull-requests: write
     with:
       python-version: '3.11'
-    secrets: inherit

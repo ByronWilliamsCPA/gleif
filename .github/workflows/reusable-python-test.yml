@@ -44,9 +44,11 @@ jobs:
         run: uv sync --all-extras
 
       - name: Run test suite
+        env:
+          COVERAGE_SOURCE: ${{ inputs.coverage-source }}
         run: |
           uv run pytest -v \
-            --cov=${{ inputs.coverage-source }} \
+            --cov="$COVERAGE_SOURCE" \
             --cov-report=xml:coverage.xml \
             --cov-report=term-missing \
             --tb=short

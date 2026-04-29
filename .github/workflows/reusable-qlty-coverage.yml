@@ -11,15 +11,12 @@ jobs:
     name: Upload Coverage to Qlty
     runs-on: ubuntu-latest
     permissions:
-      contents: read
       actions: read
     steps:
       - name: Harden the runner (Audit outbound calls)
         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
           egress-policy: audit
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Download coverage artifacts
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
