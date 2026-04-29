@@ -34,89 +34,23 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  UV_CACHE_DIR: ~/.cache/uv
-  PYTHON_VERSION: '3.11'
-
 jobs:
   test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Run test suite
-        run: |
-          uv run pytest -v \
-            --cov=gleif \
-            --cov-report=xml:coverage.xml \
-            --cov-report=term-missing \
-            --tb=short
-
-      - name: Upload coverage artifact
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: coverage-report
-          path: coverage.xml
+    uses: ./.github/workflows/reusable-python-test.yml
+    permissions:
+      contents: read
+    with:
+      python-version: '3.11'
+      coverage-source: gleif
 
   quality-checks:
-    name: Quality Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Set up Python
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install UV
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install dependencies
-        run: uv sync --all-extras
-
-      - name: Code formatting validation
-        run: uv run ruff format --check .
-
-      - name: Linting
-        run: uv run ruff check .
-
-      - name: Type checking (BasedPyright strict)
-        run: uv run basedpyright src
-
-      - name: Build documentation (strict)
-        run: uv run mkdocs build --strict
+    uses: ./.github/workflows/reusable-python-quality.yml
+    permissions:
+      contents: read
+    with:
+      python-version: '3.11'
+      source-dir: src
+      build-docs: true
 
   ci-gate:
     name: CI Gate
