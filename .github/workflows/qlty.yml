@@ -16,27 +16,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  upload-coverage:
-    name: Upload Coverage to Qlty
-    runs-on: ubuntu-latest
+  qlty:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: coverage-report
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload coverage to Qlty
-        uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899  # v2
-        with:
-          token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
-          files: coverage.xml
+    uses: ./.github/workflows/reusable-qlty-coverage.yml
+    permissions:
+      contents: read
+      actions: read
+    secrets:
+      QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
