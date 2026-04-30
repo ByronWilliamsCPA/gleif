@@ -2,6 +2,14 @@ name: Reusable - OSSF Scorecard Analysis
 
 on:
   workflow_call:
+    secrets:
+      SCORECARD_TOKEN:
+        required: false
+        description: >
+          Fine-grained PAT with Administration:Read-only and Metadata:Read-only.
+          Required for the Branch-Protection check to read classic branch
+          protection rules via the GitHub API. Falls back to GITHUB_TOKEN
+          (Branch-Protection scores 0) if not provided.
 
 jobs:
   analysis:
@@ -23,6 +31,11 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           persist-credentials: false
+
+      - name: Warn if SCORECARD_TOKEN is absent
+        if: ${{ secrets.SCORECARD_TOKEN == '' }}
+        run: |
+          echo "::warning::SCORECARD_TOKEN not set; Branch-Protection falls back to GITHUB_TOKEN and may score 0"
 
       - name: Run analysis
         uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a  # v2.4.3

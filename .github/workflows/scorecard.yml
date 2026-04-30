@@ -16,6 +16,8 @@ concurrency:
 jobs:
   scorecard:
     uses: ./.github/workflows/reusable-scorecard.yml
+    secrets:
+      SCORECARD_TOKEN: ${{ secrets.SCORECARD_TOKEN }}
     permissions:
       security-events: write
       id-token: write
