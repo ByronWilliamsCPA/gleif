@@ -1,0 +1,216 @@
+name: Reusable - Security Analysis
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        type: string
+        default: '3.11'
+
+jobs:
+  detect-changes:
+    name: Detect Security-Relevant Changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      security_files: ${{ steps.filter.outputs.security }}
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check for security-relevant file changes
+        id: filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        with:
+          filters: |
+            security:
+              - '**/*.py'
+              - '.github/workflows/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+
+  dependency-security:
+    name: Dependency Security Review
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      github.event_name == 'pull_request' &&
+      needs.detect-changes.outputs.security_files == 'true'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: moderate
+          license-check: true
+          comment-summary-in-pr: always
+          deny-license-types: GPL-2.0, GPL-3.0
+
+  security-scanning:
+    name: Bandit Security Scan
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.security_files == 'true'
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      UV_CACHE_DIR: ~/.cache/uv
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Bandit Security Analysis
+        run: |
+          uv run pip install bandit
+          uv run bandit -r src -f json -o bandit-report.json || true
+          uv run bandit -r src || true
+
+      - name: Upload Security Reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: security-scan-reports
+          path: bandit-report.json
+
+  osv-scanner:
+    name: OSV Vulnerability Scanner
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.security_files == 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run OSV Scanner
+        id: osv-scan
+        uses: google/osv-scanner-action/osv-scanner-action@c51854704019a247608d928f370c98740469d4b5 # v2.3.5
+        with:
+          scan-args: |-
+            --lockfile=uv.lock
+            --format=json
+            --output=osv-results.json
+        continue-on-error: true
+
+      - name: Check OSV Results for HIGH/CRITICAL
+        run: |
+          osv_ok="${{ steps.osv-scan.outcome }}"
+          if [ "$osv_ok" != "success" ] && \
+             { [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; }; then
+            echo "OSV scanner failed before producing results"
+            exit 1
+          fi
+
+          if [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; then
+            echo "No vulnerabilities found"
+            exit 0
+          fi
+
+          python3 << 'EOF'
+          import json, sys
+
+          with open('osv-results.json') as f:
+              results = json.load(f)
+
+          vulns = results.get('results', [])
+          if not vulns:
+              print('No vulnerabilities found')
+              sys.exit(0)
+
+          high_crit = []
+          for group in vulns:
+              for pkg in group.get('packages', []):
+                  for vuln in pkg.get('vulnerabilities', []):
+                      vuln_id = vuln.get('id', 'UNKNOWN')
+                      sev_raw = vuln.get('severity')
+                      if isinstance(sev_raw, str):
+                          sev = sev_raw.upper()
+                      else:
+                          db_sev = (vuln.get('database_specific') or {}).get('severity', '')
+                          sev = str(db_sev).upper() if db_sev else ''
+                      if sev in ('HIGH', 'CRITICAL'):
+                          high_crit.append(f"{vuln_id} ({sev})")
+
+          if high_crit:
+              print(f'Found {len(high_crit)} HIGH/CRITICAL vulnerabilities:')
+              for v in high_crit:
+                  print(f'  - {v}')
+              sys.exit(1)
+
+          print('No HIGH/CRITICAL vulnerabilities found')
+          EOF
+
+      - name: Upload OSV Scanner Report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: osv-scanner-results
+          path: osv-results.json
+          if-no-files-found: warn
+
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: [detect-changes, dependency-security, security-scanning, osv-scanner]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Security Gate Results
+        run: |
+          is_acceptable() {
+            [[ "$1" == "success" || "$1" == "skipped" ]]
+          }
+
+          if is_acceptable "${{ needs.detect-changes.result }}" && \
+             is_acceptable "${{ needs.dependency-security.result }}" && \
+             is_acceptable "${{ needs.security-scanning.result }}" && \
+             is_acceptable "${{ needs.osv-scanner.result }}"; then
+            echo "Security gate passed"
+          else
+            echo "Security gate failed"
+            echo "detect-changes: ${{ needs.detect-changes.result }}"
+            echo "dependency-security: ${{ needs.dependency-security.result }}"
+            echo "security-scanning: ${{ needs.security-scanning.result }}"
+            echo "osv-scanner: ${{ needs.osv-scanner.result }}"
+            exit 1
+          fi

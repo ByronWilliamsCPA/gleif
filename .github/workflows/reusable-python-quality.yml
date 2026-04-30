@@ -1,0 +1,61 @@
+name: Reusable - Python Quality Checks
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        type: string
+        default: '3.11'
+      source-dir:
+        description: 'Source directory for type checking'
+        type: string
+        default: 'src'
+      build-docs:
+        description: 'Whether to build MkDocs documentation'
+        type: boolean
+        default: false
+
+jobs:
+  quality-checks:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      UV_CACHE_DIR: ~/.cache/uv
+    steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Code formatting validation
+        run: uv run ruff format --check .
+
+      - name: Linting
+        run: uv run ruff check .
+
+      - name: Type checking (BasedPyright strict)
+        run: uv run basedpyright ${{ inputs.source-dir }}
+
+      - name: Build documentation (strict)
+        if: inputs.build-docs
+        run: uv run mkdocs build --strict
