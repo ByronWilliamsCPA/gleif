@@ -33,6 +33,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   description (dependency-review on PRs, osv-scanner via security workflow)
 - `docs/known-vulnerabilities.md`: softened OpenSSF release gate claim to
   reflect a policy requirement rather than automated CI enforcement
+- `reusable-scorecard.yml`: wired `SCORECARD_TOKEN` through the
+  `workflow_call` secrets declaration and the `scorecard.yml` caller so the
+  secret reaches the `ossf/scorecard-action` step; without this wiring the
+  secret resolved to an empty string and the Branch-Protection check
+  continued to score 0 despite the token being provisioned
 
 ### Security
 

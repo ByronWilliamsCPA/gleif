@@ -133,7 +133,9 @@ jobs:
 
       - name: Check OSV Results for HIGH/CRITICAL
         run: |
-          if [ "${{ steps.osv-scan.outcome }}" != "success" ] && { [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; }; then
+          osv_ok="${{ steps.osv-scan.outcome }}"
+          if [ "$osv_ok" != "success" ] && \
+             { [ ! -f osv-results.json ] || [ ! -s osv-results.json ]; }; then
             echo "OSV scanner failed before producing results"
             exit 1
           fi
