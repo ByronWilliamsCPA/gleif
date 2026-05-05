@@ -1,0 +1,1134 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CLI tool for downloading GLEIF golden copy datasets, loading them into DuckDB, and querying LEI relationship hierarchies.">
+      
+      
+        <meta name="author" content="Byron Williams">
+      
+      
+        <link rel="canonical" href="https://byronwilliamscpa.github.io/gleif/compliance-reports/lessons-learned/2026-04-25/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Compliance Retrospective: 2026-04-25 - GLEIF CLI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#compliance-retrospective-2026-04-25" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="GLEIF CLI" class="md-header__button md-logo" aria-label="GLEIF CLI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            GLEIF CLI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Compliance Retrospective: 2026-04-25
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ByronWilliamsCPA/gleif" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/gleif
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../cli-reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  CLI Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../troubleshooting/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Troubleshooting
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../architecture/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../development/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Development
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="GLEIF CLI" class="md-nav__button md-logo" aria-label="GLEIF CLI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    GLEIF CLI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ByronWilliamsCPA/gleif" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ByronWilliamsCPA/gleif
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../cli-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../architecture/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model & Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#patterns-observed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns Observed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposed-manifest-additions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proposed Manifest Additions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Proposed Manifest Additions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#found-005b-empty-readme-at-project-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FOUND-005b: Empty README at project root
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ci-007a-security-scanner-silenced-with-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI-007a: Security scanner silenced with || true
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ci-harden-001-harden-runner-absent-from-non-build-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI-HARDEN-001: harden-runner absent from non-build jobs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arch-001-module-level-rich-console-in-library-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ARCH-001: Module-level Rich Console in library code
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agent-scope-expansion-candidates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Scope Expansion Candidates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-frequency-existing-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High-Frequency Existing Checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manual-action-items-not-auto-remediable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Action Items (not auto-remediable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#follow-on-technical-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Follow-on Technical Work
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="compliance-retrospective-2026-04-25">Compliance Retrospective: 2026-04-25<a class="headerlink" href="#compliance-retrospective-2026-04-25" title="Permanent link">&para;</a></h1>
+<h2 id="session-summary">Session Summary<a class="headerlink" href="#session-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Repos reviewed</td>
+<td>1 (ByronWilliamsCPA/gleif)</td>
+</tr>
+<tr>
+<td>Total findings (net of overrides)</td>
+<td>49</td>
+</tr>
+<tr>
+<td>Critical</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Important</td>
+<td>22</td>
+</tr>
+<tr>
+<td>Suggested</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Unclassified candidates</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Findings remediated</td>
+<td>45</td>
+</tr>
+<tr>
+<td>Findings requiring manual action</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>All 49 findings from 7 domain agents were approved for remediation (option B: all critical + important + suggested). Four findings could not be auto-remediated and require deliberate user action outside the CLI.</p>
+<hr />
+<h2 id="patterns-observed">Patterns Observed<a class="headerlink" href="#patterns-observed" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><strong>OpenSSF required files absent</strong>: All five of LICENSE, SECURITY.md, CONTRIBUTING.md, CHANGELOG.md, and README.md (empty) were missing or empty. This is the most common first-run failure pattern for repos that were bootstrapped from a minimal template without a compliance pass. Appeared in 5 of 5 required-file checks (5/5 checks failing).</p>
+</li>
+<li>
+<p><strong>Mutable tags in pre-commit config</strong>: All 5 rev values in <code>.pre-commit-config.yaml</code> were mutable tags rather than SHA pins. This is a supply-chain risk that is easy to miss because pre-commit does not warn on mutable revs at install time.</p>
+</li>
+<li>
+<p><strong>Bandit <code>|| true</code> in CI</strong>: The security scan step in <code>ci.yml</code> appended <code>|| true</code>, causing all Bandit findings to be silently swallowed. CI showed green while the scanner found real issues. This pattern provides false assurance and is worth a dedicated manifest check.</p>
+</li>
+<li>
+<p><strong>Unpinned action SHAs in CI</strong>: Two actions (<code>qltysh/qlty-action/coverage@v2</code> and <code>qltysh/qlty-action@v2</code>) used mutable version tags. This mirrors the pre-commit mutable-tag pattern at the GitHub Actions layer.</p>
+</li>
+<li>
+<p><strong>BasedPyright in standard mode</strong>: The project had BasedPyright configured in <code>standard</code> mode rather than <code>strict</code>. The toolchain-auditor found this important enough to remediate; strict mode surfaces a class of type errors that standard mode hides.</p>
+</li>
+<li>
+<p><strong>Missing harden-runner in CI jobs</strong>: Three jobs (<code>detect-changes</code>, <code>security-gate</code>, <code>ci-gate</code>) lacked <code>step-security/harden-runner</code>, leaving those jobs without network egress monitoring.</p>
+</li>
+<li>
+<p><strong>CLAUDE.md missing required sections</strong>: Model Selection, RAD, and Compact Instructions sections were all absent from the project CLAUDE.md. These are required by the global standard but are easy to omit when CLAUDE.md is authored before the global standard is finalised.</p>
+</li>
+<li>
+<p><strong>Em-dashes in documentation</strong>: 19 em-dash characters were found across <code>CLAUDE.md</code> and <code>docs/index.md</code>. This violates the hard rule in the global writing standard and was not caught earlier because pre-commit did not yet enforce it. The no-em-dash pre-commit hook was added as part of remediation.</p>
+</li>
+<li>
+<p><strong>Branch protection absent</strong>: Branch protection was not configured on <code>main</code>. This is a common pattern for solo-maintainer repos where the developer is the only committer and treats the protection as an unnecessary friction. The OSSF Scorecard penalises this regardless of team size.</p>
+</li>
+<li>
+<p><strong>Scorecard workflow absent</strong>: No <code>.github/workflows/scorecard.yml</code> existed, meaning the repo was invisible to OpenSSF Scorecard automated scoring.</p>
+</li>
+</ul>
+<hr />
+<h2 id="proposed-manifest-additions">Proposed Manifest Additions<a class="headerlink" href="#proposed-manifest-additions" title="Permanent link">&para;</a></h2>
+<h3 id="found-005b-empty-readme-at-project-root">FOUND-005b: Empty README at project root<a class="headerlink" href="#found-005b-empty-readme-at-project-root" title="Permanent link">&para;</a></h3>
+<p>Projects using MkDocs or similar doc generators often treat <code>docs/index.md</code> as the primary entry point and leave <code>README.md</code> empty or with a one-line placeholder. GitHub visitors see a blank repository description. Proposed check:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FOUND-005b</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foundations</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">critical</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;README.md</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">present</span><span class="nv"> </span><span class="s">but</span><span class="nv"> </span><span class="s">empty</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">contains</span><span class="nv"> </span><span class="s">only</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">placeholder</span><span class="nv"> </span><span class="s">(&lt;</span><span class="nv"> </span><span class="s">50</span><span class="nv"> </span><span class="s">non-whitespace</span><span class="nv"> </span><span class="s">characters)&quot;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;file_min_content:</span><span class="nv"> </span><span class="s">README.md,</span><span class="nv"> </span><span class="s">50&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">override_eligible</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">notes</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Distinct</span><span class="nv"> </span><span class="s">from</span><span class="nv"> </span><span class="s">FOUND-005</span><span class="nv"> </span><span class="s">(absent).</span><span class="nv"> </span><span class="s">Catches</span><span class="nv"> </span><span class="s">repos</span><span class="nv"> </span><span class="s">that</span><span class="nv"> </span><span class="s">pass</span><span class="nv"> </span><span class="s">file_exists</span><span class="nv"> </span><span class="s">but</span><span class="nv"> </span><span class="s">provide</span><span class="nv"> </span><span class="s">no</span><span class="nv"> </span><span class="s">content.&quot;</span>
+</span></code></pre></div>
+<h3 id="ci-007a-security-scanner-silenced-with-true">CI-007a: Security scanner silenced with <code>|| true</code><a class="headerlink" href="#ci-007a-security-scanner-silenced-with-true" title="Permanent link">&para;</a></h3>
+<p>Appending <code>|| true</code> to a SAST or dependency scanner in CI causes the job to pass even when the scanner finds real issues. The scanner is present but provides false assurance. Proposed check:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CI-007a</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ci</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">important</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Security</span><span class="nv"> </span><span class="s">scanner</span><span class="nv"> </span><span class="s">step</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">CI</span><span class="nv"> </span><span class="s">uses</span><span class="nv"> </span><span class="s">&#39;||</span><span class="nv"> </span><span class="s">true&#39;</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">equivalent,</span><span class="nv"> </span><span class="s">silencing</span><span class="nv"> </span><span class="s">all</span><span class="nv"> </span><span class="s">findings&quot;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;grep_absent:</span><span class="nv"> </span><span class="s">.github/workflows/*.yml,</span><span class="nv"> </span><span class="s">&#39;||</span><span class="nv"> </span><span class="s">true&#39;&quot;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">override_eligible</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">notes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="no">Covers Bandit, osv-scanner, pip-audit, and similar tools. Acceptable alternative:</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="no">scope the scanner to --level HIGH so only high-severity findings block CI, but do</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="no">not suppress the exit code entirely.</span>
+</span></code></pre></div>
+<h3 id="ci-harden-001-harden-runner-absent-from-non-build-jobs">CI-HARDEN-001: harden-runner absent from non-build jobs<a class="headerlink" href="#ci-harden-001-harden-runner-absent-from-non-build-jobs" title="Permanent link">&para;</a></h3>
+<p>Jobs that do not build artifacts (gates, detection jobs, notification jobs) are commonly missed when harden-runner is added because authors focus on the jobs that actually run code. Proposed check:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CI-HARDEN-001</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ci</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">important</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;One</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">more</span><span class="nv"> </span><span class="s">CI</span><span class="nv"> </span><span class="s">jobs</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">missing</span><span class="nv"> </span><span class="s">step-security/harden-runner</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">first</span><span class="nv"> </span><span class="s">step&quot;</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;all_jobs_have_step:</span><span class="nv"> </span><span class="s">.github/workflows/*.yml,</span><span class="nv"> </span><span class="s">step-security/harden-runner&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">override_eligible</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">notes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="no">Jobs that use &#39;runs-on: ubuntu-latest&#39; or any GitHub-hosted runner should include</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="no">harden-runner. Override is eligible for jobs that run in a fully isolated</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="no">self-hosted environment with network egress already controlled at the infra level.</span>
+</span></code></pre></div>
+<h3 id="arch-001-module-level-rich-console-in-library-code">ARCH-001: Module-level Rich Console in library code<a class="headerlink" href="#arch-001-module-level-rich-console-in-library-code" title="Permanent link">&para;</a></h3>
+<p>Projects that start as scripts and are later refactored into importable libraries often retain module-level <code>Console()</code> instances that emit output when library functions are called. This breaks the library contract (callers cannot suppress output) and interferes with test capture. Proposed check:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ARCH-001</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">architecture</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">suggested</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Library</span><span class="nv"> </span><span class="s">module</span><span class="nv"> </span><span class="s">instantiates</span><span class="nv"> </span><span class="s">Rich</span><span class="nv"> </span><span class="s">Console()</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">print()</span><span class="nv"> </span><span class="s">at</span><span class="nv"> </span><span class="s">module</span><span class="nv"> </span><span class="s">level,</span><span class="nv"> </span><span class="s">coupling</span><span class="nv"> </span><span class="s">import</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">side</span><span class="nv"> </span><span class="s">effects&quot;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">verify</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;grep_absent:</span><span class="nv"> </span><span class="s">src/**/*.py,</span><span class="nv"> </span><span class="s">&#39;^console</span><span class="nv"> </span><span class="s">=</span><span class="nv"> </span><span class="s">Console()&#39;&quot;</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">override_eligible</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">notes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="no">Acceptable pattern: pass a Console instance as a parameter or use a module-level</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="no">logger instead. Override eligible for intentional CLI-only entry-point modules</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="no">(e.g., cli.py) where the module is never imported by other library code.</span>
+</span></code></pre></div>
+<hr />
+<h2 id="agent-scope-expansion-candidates">Agent Scope Expansion Candidates<a class="headerlink" href="#agent-scope-expansion-candidates" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p><strong>python-toolchain-auditor</strong>: Currently checks for <code>[tool.interrogate]</code> presence only. Consider adding a check for <code>fail-under</code> threshold value; projects that add the section but set <code>fail-under=0</code> (or omit it, accepting the default of 0) satisfy the presence check while gaining no enforcement. A threshold of 70 or higher should be required.</p>
+</li>
+<li>
+<p><strong>pre-commit-auditor</strong>: Currently checks for the presence of a no-em-dash hook but does not verify the regex pattern used. A hook that matches the em-dash character (U+2014) but not <code>--</code> (double hyphen used as a substitute) would pass the presence check while missing a common variant. Consider verifying the pattern string, not just hook presence.</p>
+</li>
+<li>
+<p><strong>devops-deployment-agent</strong>: The <code>|| true</code> pattern (CI-007a above) is not currently in scope. The agent checks for scanner presence but not for exit-code suppression. Expanding to grep for <code>|| true</code> adjacent to known scanner invocations would catch this class of false-assurance findings.</p>
+</li>
+<li>
+<p><strong>ossf-compliance-auditor</strong>: The solo-maintainer branch-protection pattern warrants a note in the check. When <code>required_approving_review_count</code> cannot be set to 1 because there is only one maintainer, the correct remedy is to enable branch protection with a bypass rule for the maintainer, not to skip protection entirely. The auditor's remediation guidance should distinguish between "absent entirely" and "present but zero reviews required."</p>
+</li>
+</ul>
+<hr />
+<h2 id="high-frequency-existing-checks">High-Frequency Existing Checks<a class="headerlink" href="#high-frequency-existing-checks" title="Permanent link">&para;</a></h2>
+<p>The following checks failed in this session. Because only one repo was reviewed, frequency is expressed as pass/fail rather than a percentage. All of these are candidates for prioritised remediation in any new repo that enters the compliance pipeline.</p>
+<table>
+<thead>
+<tr>
+<th>Check ID</th>
+<th>Description</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FOUND-001</td>
+<td>SECURITY.md absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>FOUND-002</td>
+<td>CONTRIBUTING.md absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>FOUND-003</td>
+<td>CHANGELOG.md absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>FOUND-004</td>
+<td>LICENSE absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>FOUND-005</td>
+<td>README.md empty</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>PC-012</td>
+<td>Pre-commit revs are mutable tags</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>TOOL-006</td>
+<td>Ruff rule codes missing from select</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>TOOL-007</td>
+<td>BasedPyright not in strict mode</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>PC-003</td>
+<td>basedpyright pre-commit hook absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>PC-005</td>
+<td>detect-secrets hook absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>PC-011</td>
+<td>no-em-dash hook absent</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>CI-006</td>
+<td>Unpinned action SHA in CI</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>CI-006b</td>
+<td>harden-runner missing from 3 jobs</td>
+<td>FAILED - remediated</td>
+</tr>
+<tr>
+<td>OSSF-004</td>
+<td>Branch protection absent</td>
+<td>FAILED - manual action required</td>
+</tr>
+<tr>
+<td>OSSF-005</td>
+<td>Dependabot absent</td>
+<td>FAILED - remediated</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="manual-action-items-not-auto-remediable">Manual Action Items (not auto-remediable)<a class="headerlink" href="#manual-action-items-not-auto-remediable" title="Permanent link">&para;</a></h2>
+<p>These items were identified but could not be remediated programmatically. They require deliberate user action and should be tracked as follow-on work.</p>
+<ol>
+<li>
+<p><strong>Branch protection on main</strong> (OSSF-004): Enable via <code>gh api</code> or the GitHub UI. The remediation command was provided during the session. For a solo-maintainer repo, enable protection with a maintainer bypass rule so force-push to main is still possible when needed. Required before <code>OSSF-009</code> (PR review enforcement) can be addressed.</p>
+</li>
+<li>
+<p><strong>Private Vulnerability Reporting</strong> (OSSF-002 partial): The GitHub API rejected the enable request because the repository is private. This feature is available on public repos and GitHub Enterprise. The SECURITY.md file was created with a contact email fallback. No further action needed unless the repo is made public or migrated to GitHub Enterprise.</p>
+</li>
+<li>
+<p><strong>Best Practices Badge</strong> (OSSF-001-BADGE, SCORECARD:CII-Best-Practices): Requires manual registration at <code>bestpractices.coreinfrastructure.org</code>. No API pathway exists for automated registration. Once registered, the badge URL should be added to README.md.</p>
+</li>
+<li>
+<p><strong>Signed releases and SBOM</strong> (SCORECARD:Signed-Releases, SCORECARD:SBOM): Both are now addressed by the <code>release.yml</code> workflow added in this PR. It uses Sigstore keyless signing and <code>anchore/sbom-action</code> for SPDX SBOM generation on tagged releases. The Scorecard workflow will pick up the change automatically.</p>
+</li>
+</ol>
+<hr />
+<h2 id="follow-on-technical-work">Follow-on Technical Work<a class="headerlink" href="#follow-on-technical-work" title="Permanent link">&para;</a></h2>
+<p>The following items were identified during remediation but deferred. They represent real gaps, not cosmetic issues.</p>
+<ol>
+<li>
+<p><strong>Ruff violation cleanup</strong> (20 new violations from TOOL-006): Adding 13 Ruff rule codes surfaced 20 new violations: <code>TC001</code>/<code>TC002</code>/<code>TC003</code> (TYPE_CHECKING import guards), <code>S608</code> (SQL in string literals, likely false positives in <code>queries.py</code> that use parameterised queries), and <code>ASYNC240</code> in <code>download.py</code>. Each category requires a targeted fix: import guards for TC*, inline <code># noqa: S608</code> with a tracking comment for confirmed false-positive SQL strings, and an httpx-compatible async pattern for ASYNC240.</p>
+</li>
+<li>
+<p><strong>Test coverage gaps</strong>: <code>download.py</code> has no unit tests. The CLI commands <code>load</code>, <code>refresh</code>, and <code>download</code> are also untested. Coverage gates currently pass because the covered modules pull the aggregate above 80%, but these modules represent the data pipeline entry points and carry the highest operational risk.</p>
+</li>
+<li>
+<p><strong><code>fetch_isins_batch</code> docstring</strong>: The docstring for this function describes incorrect parameter semantics. This was flagged by the darglint hook after it was added. Should be fixed as part of the Ruff cleanup pass.</p>
+</li>
+<li>
+<p><strong><code>load</code> CLI command importing private functions</strong>: The <code>load</code> command imports functions that are named with a leading underscore, indicating they are not part of the public API of their module. This should be resolved either by making the functions public or by restructuring the module boundary.</p>
+</li>
+<li>
+<p><strong><code>gleif name</code> empty string guard</strong>: Passing an empty string to the <code>name</code> command produces a query that matches all records. A guard clause or a minimum-length validator on the Typer argument should be added.</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2026 GLEIF CLI
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
