@@ -59,7 +59,7 @@ jobs:
           fail-on-severity: moderate
           license-check: true
           comment-summary-in-pr: always
-          deny-license-types: GPL-2.0, GPL-3.0
+          deny-licenses: GPL-2.0, GPL-3.0
 
   security-scanning:
     name: Bandit Security Scan
