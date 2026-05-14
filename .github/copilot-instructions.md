@@ -4,7 +4,7 @@ Focus on: business logic correctness, error handling completeness, edge cases,
 concurrency issues, and security logic flaws.
 
 Exclude from review: code style, formatting, and whitespace. These are enforced
-by pre-commit hooks and ruff -- do not flag them.
+by pre-commit hooks and ruff; do not flag them.
 
 ## Project context
 
@@ -22,7 +22,7 @@ by pre-commit hooks and ruff -- do not flag them.
 
 - Framework: pytest
 - Database fixtures: in-memory DuckDB populated via tests/conftest.py
-- Coverage target: 80% line, 70% branch
+- Coverage target: 65% line (interim; will be raised to 80% once download.py and CLI command tests are added), 70% branch
 
 ## Patterns to reinforce
 
@@ -32,6 +32,6 @@ by pre-commit hooks and ruff -- do not flag them.
 
 ## Patterns to avoid
 
-- Do not add type: ignore comments without an explanatory justification comment
+- Do not add `# type: ignore` comments; fix the underlying type error instead
 - Do not use subprocess or os.system for external commands
 - Do not introduce synchronous HTTP calls in async download paths

@@ -1,6 +1,6 @@
 # GEMINI.md
 
-Gemini CLI configuration for this project. For full project context, see CLAUDE.md.
+Gemini CLI configuration for this project.
 
 ## Project Overview
 
@@ -20,7 +20,9 @@ uv run gleif download          # Download GLEIF datasets
 uv run gleif load              # Load CSVs into DuckDB
 uv run gleif refresh           # Download + load in one step
 uv run gleif lei <LEI>         # Look up an LEI and display related entities
+uv run gleif lei <LEI> --isin  # Include ISIN mappings from GLEIF API
 uv run gleif name <QUERY>      # Search entities by legal name (substring)
+uv run gleif name <QUERY> --isin --limit 20  # With ISIN data and result limit
 uv run gleif status            # Show database record counts
 
 # Run tests
@@ -38,7 +40,7 @@ uv run pre-commit run --all-files
 ## Code Style
 
 - Ruff at 88-character line length for formatting and linting
-- BasedPyright in standard mode with strict inference for type checking
+- BasedPyright in strict mode for type checking
 - Conventional commits; GPG-signed commits required
 
 ## Architecture
@@ -47,5 +49,4 @@ Data pipeline: GLEIF REST API → ZIP download → CSV extract → DuckDB bulk l
 SQL queries → Rich terminal output. Source lives in `src/gleif/`; tests use
 in-memory DuckDB with fixtures in `tests/conftest.py`.
 
-For full architecture details, dataset schemas, CI/CD configuration, and
-development conventions, see CLAUDE.md.
+For full architecture details, dataset schemas, and CI/CD configuration, see AGENTS.md.

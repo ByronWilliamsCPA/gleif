@@ -1,8 +1,6 @@
 # AGENTS.md
 
 Agent configuration for AI coding assistants (Codex, Gemini CLI, and similar tools).
-This file follows the same structure as CLAUDE.md for consistency. For full project
-context, architecture decisions, and detailed conventions, see CLAUDE.md.
 
 ## Project Overview
 
@@ -22,7 +20,9 @@ uv run gleif download          # Download GLEIF datasets
 uv run gleif load              # Load CSVs into DuckDB
 uv run gleif refresh           # Download + load in one step
 uv run gleif lei <LEI>         # Look up an LEI and display related entities
+uv run gleif lei <LEI> --isin  # Include ISIN mappings from GLEIF API
 uv run gleif name <QUERY>      # Search entities by legal name (substring)
+uv run gleif name <QUERY> --isin --limit 20  # With ISIN data and result limit
 uv run gleif status            # Show database record counts
 
 # Run tests
@@ -73,6 +73,6 @@ Ultimate Parent → Parent → Child A + Child B. Run `uv run pytest` for the fu
 ## Code Style
 
 - Formatter and linter: Ruff at 88-character line length
-- Type checker: BasedPyright in standard mode with strict inference
+- Type checker: BasedPyright in strict mode
 - No `# noqa`, `# type: ignore`, or CI bypass flags; fix the actual issue
 - Conventional commits required; all commits must be GPG-signed
