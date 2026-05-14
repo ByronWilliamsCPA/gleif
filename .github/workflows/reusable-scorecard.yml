@@ -11,10 +11,13 @@ on:
           protection rules via the GitHub API. Falls back to GITHUB_TOKEN
           (Branch-Protection scores 0) if not provided.
 
+permissions: {}
+
 jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       security-events: write
       id-token: write

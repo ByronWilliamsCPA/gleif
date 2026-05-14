@@ -110,26 +110,12 @@ repos:
   # Secret Detection - TruffleHog
   # Advanced secret detection beyond detect-private-key.
   # Detects API keys, tokens, credentials, and other secrets.
-  - repo: local
+  # Uses pre-commit's built-in tool installation; no silent-skip possible.
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: "37b77001d0174ebec2fcca2bd83ff83a6d45a3ab"  # v3.95.3  # pragma: allowlist secret
     hooks:
       - id: trufflehog
-        name: TruffleHog Secret Scanner
-        description: Detect secrets in staged files before committing
-        # Scans staged files only. Git-history mode traverses fetched remote
-        # branches in the local object store, producing false positives from
-        # unmerged branches; that belongs in CI, not a pre-commit hook.
-        # Skips gracefully when trufflehog is not installed rather than
-        # blocking commits on machines where it has not been set up.
-        entry: >-
-          bash -c
-          'if ! command -v trufflehog >/dev/null 2>&1; then
-          echo "TruffleHog not installed - skipping" >&2; exit 0; fi;
-          [ -z "$(git diff --cached --diff-filter=d --name-only)" ] && exit 0;
-          git diff --cached -z --diff-filter=d --name-only |
-          xargs -0 trufflehog filesystem --fail --no-update
-          --results=verified,unknown'
-        language: system
-        pass_filenames: false
+        exclude: '^CHANGELOG\.md$'
         stages: [pre-commit]
 
 exclude: |

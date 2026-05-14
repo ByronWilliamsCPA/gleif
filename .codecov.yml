@@ -1,0 +1,22 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+
+flags:
+  unit:
+    paths:
+      - tests/unit/
+  integration:
+    paths:
+      - tests/integration/
+
+comment:
+  layout: reach,diff,flags,files
+  behavior: default
+  require_changes: false

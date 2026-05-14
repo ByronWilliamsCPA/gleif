@@ -12,6 +12,8 @@ on:
         type: string
         default: 'sbom.spdx.json'
 
+permissions: {}
+
 jobs:
   release:
     name: Build, Sign & Release

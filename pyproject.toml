@@ -7,7 +7,21 @@ license = "MIT"
 authors = [
     { name = "Byron Williams", email = "byronawilliams@gmail.com" },
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4"
+keywords = ["gleif", "lei", "legal-entity-identifier", "financial-data", "duckdb"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Database",
+    "Topic :: Office/Business :: Financial",
+]
 dependencies = [
     "duckdb>=1.1.0",
     "httpx>=0.27.0",
@@ -17,6 +31,7 @@ dependencies = [
 
 [project.urls]
 Repository = "https://github.com/ByronWilliamsCPA/gleif"
+Documentation = "https://byronwilliamscpa.github.io/gleif/"
 Changelog = "https://github.com/ByronWilliamsCPA/gleif/blob/main/CHANGELOG.md"
 
 [project.scripts]

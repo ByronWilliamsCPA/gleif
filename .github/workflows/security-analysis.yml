@@ -20,6 +20,10 @@ on:
     - cron: '30 2 * * 1'  # Weekly Monday 2:30 AM UTC
   workflow_dispatch:
 
+concurrency:
+  group: security-analysis-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
   pull-requests: write

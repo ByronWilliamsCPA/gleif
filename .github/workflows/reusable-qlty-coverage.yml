@@ -6,10 +6,13 @@ on:
       QLTY_COVERAGE_TOKEN:
         required: true
 
+permissions: {}
+
 jobs:
   upload-coverage:
     name: Upload Coverage to Qlty
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       actions: read
     steps:

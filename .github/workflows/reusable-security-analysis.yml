@@ -8,10 +8,13 @@ on:
         type: string
         default: '3.11'
 
+permissions: {}
+
 jobs:
   detect-changes:
     name: Detect Security-Relevant Changes
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     outputs:
@@ -38,6 +41,7 @@ jobs:
   dependency-security:
     name: Dependency Security Review
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: detect-changes
     if: |
       github.event_name == 'pull_request' &&
@@ -107,6 +111,7 @@ jobs:
   osv-scanner:
     name: OSV Vulnerability Scanner
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: detect-changes
     if: needs.detect-changes.outputs.security_files == 'true'
     permissions:
@@ -121,7 +126,6 @@ jobs:
 
       - name: Run OSV Scanner
         id: osv-scan
-        continue-on-error: true
         uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
         with:
           scan-args: |-
@@ -189,6 +193,7 @@ jobs:
   security-gate:
     name: Security Gate Validation
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     needs: [detect-changes, dependency-security, security-scanning, osv-scanner]
     if: always()
     permissions:

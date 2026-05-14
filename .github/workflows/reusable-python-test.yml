@@ -12,6 +12,8 @@ on:
         type: string
         required: true
 
+permissions: {}
+
 jobs:
   test:
     name: Test Suite
@@ -19,6 +21,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+      checks: write
     steps:
       - name: Harden the runner (Audit outbound calls)
         uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
@@ -49,7 +52,8 @@ jobs:
             --cov="$COVERAGE_SOURCE" \
             --cov-report=xml:coverage.xml \
             --cov-report=term-missing \
-            --tb=short
+            --tb=short \
+            --junit-xml=test-results.xml
 
       - name: Upload coverage artifact
         if: always()
@@ -57,3 +61,10 @@ jobs:
         with:
           name: coverage-report
           path: coverage.xml
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040  # v2.23.0
+        if: always()
+        with:
+          files: test-results.xml
+          check_name: Test Results
