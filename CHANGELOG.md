@@ -16,8 +16,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - `SECURITY.md`, `CONTRIBUTING.md` (OpenSSF required community files)
 - `CODEOWNERS`, darglint, and interrogate pre-commit hooks
 
+### Changed
+
+- GitHub Actions bumped to major versions: `actions/checkout` v4→v6,
+  `actions/setup-python` v5→v6, `sigstore/cosign-installer` v3→v4,
+  `actions/attest-build-provenance` v1→v4, `fsfe/reuse-action` v4→v6,
+  `actions/dependency-review-action` v4→v5; all now run Node 24 runtimes
+- `release-sign.yml`: `cosign sign-blob` updated to use `--bundle` flag
+  (required by cosign v3, installed by cosign-installer v4); bundle artifacts
+  added to release upload
+- `slsa-provenance.yml`: added `artifact-metadata: write` permission required
+  by `attest-build-provenance` v4
+- `reusable-security-analysis.yml`: corrected `deny-license-types` parameter
+  to `deny-licenses`; GPL-2.0 and GPL-3.0 blocking now active
+
 ### Fixed
 
+- `.pre-commit-config.yaml`: moved TruffleHog `- repo: local` block before the
+  top-level `exclude:` key; the block scalar was absorbing the entire hook
+  definition as regex text, causing `InvalidConfigError` on every pre-commit run
 - Security Analysis: moved `continue-on-error` from job level to step level on
   `codeql-analysis` so real CodeQL failures propagate to the security gate
 - Security Analysis: `dorny/paths-filter` silently skipped all jobs on weekly
