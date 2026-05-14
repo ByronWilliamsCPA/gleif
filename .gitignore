@@ -68,3 +68,6 @@ site/
 
 # GLEIF ZIP downloads
 *.zip
+
+# Generated compliance reports
+docs/compliance-reports/
