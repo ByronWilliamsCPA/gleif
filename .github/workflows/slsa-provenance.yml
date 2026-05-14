@@ -22,11 +22,7 @@ on:
         type: string
 
 permissions:
-  contents: write
-  id-token: write
-  actions: read
-  attestations: write
-  artifact-metadata: write
+  contents: read
 
 jobs:
   # ==========================================================================
@@ -36,6 +32,12 @@ jobs:
     name: Build Package
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     outputs:
       hashes: ${{ steps.hashes.outputs.hashes }}
       version: ${{ steps.version.outputs.version }}
@@ -50,6 +52,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -101,7 +104,7 @@ jobs:
   slsa:
     name: SLSA Level 3
     needs: [build]
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml@main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-slsa.yml@a4fb54a1bec59ddd5f2a498caaa942c542a0631d # main
     with:
       base64-subjects: ${{ needs.build.outputs.hashes }}
       upload-assets: true

@@ -23,10 +23,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `actions/attest-build-provenance` v1→v4, `fsfe/reuse-action` v4→v6,
   `actions/dependency-review-action` v4→v5; all now run Node 24 runtimes
 - `release-sign.yml`: `cosign sign-blob` updated to use `--bundle` flag
-  (required by cosign v3, installed by cosign-installer v4); bundle artifacts
-  added to release upload
-- `slsa-provenance.yml`: added `artifact-metadata: write` permission required
-  by `attest-build-provenance` v4
+  (cosign v3 deprecated `--output-signature`/`--output-certificate`); `.sig`
+  and `.pem` outputs removed; only `.bundle` uploaded to release assets
+- `slsa-provenance.yml`: moved all write permissions from workflow level to
+  `build` job level (least-privilege, resolves S8233); added
+  `persist-credentials: false` to checkout step; SHA-pinned org-level reusable
+  workflow ref to replace mutable `@main` tag
 - `reusable-security-analysis.yml`: corrected `deny-license-types` parameter
   to `deny-licenses`; GPL-2.0 and GPL-3.0 blocking now active
 
@@ -35,6 +37,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - `.pre-commit-config.yaml`: moved TruffleHog `- repo: local` block before the
   top-level `exclude:` key; the block scalar was absorbing the entire hook
   definition as regex text, causing `InvalidConfigError` on every pre-commit run
+- `.pre-commit-config.yaml`: replaced `command -v trufflehog && scan || skip`
+  pattern with explicit `if/else`; the prior form silently exited 0 when
+  TruffleHog was installed but the scan found secrets
 - Security Analysis: moved `continue-on-error` from job level to step level on
   `codeql-analysis` so real CodeQL failures propagate to the security gate
 - Security Analysis: `dorny/paths-filter` silently skipped all jobs on weekly

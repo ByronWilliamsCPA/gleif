@@ -59,8 +59,6 @@ jobs:
             cosign sign-blob \
               --yes \
               --bundle "${artifact}.bundle" \
-              --output-signature "${artifact}.sig" \
-              --output-certificate "${artifact}.pem" \
               "$artifact"
             signed_count=$((signed_count + 1))
           done
@@ -77,12 +75,12 @@ jobs:
         run: |
           cd release-assets
           sig_files=()
-          for f in *.sig *.pem *.bundle; do
+          for f in *.bundle; do
             [ -f "$f" ] && sig_files+=("$f")
           done
           if [ "${#sig_files[@]}" -gt 0 ]; then
             gh release upload "$RELEASE_TAG" "${sig_files[@]}" --clobber
           else
-            echo "No signature files found to upload; expected .sig and .pem from cosign" >&2
+            echo "No signature files found to upload; expected .bundle from cosign" >&2
             exit 1
           fi
