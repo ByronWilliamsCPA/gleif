@@ -26,6 +26,7 @@ permissions:
 
 jobs:
   security:
+    name: Security Analysis
     uses: ./.github/workflows/reusable-security-analysis.yml
     permissions:
       contents: read

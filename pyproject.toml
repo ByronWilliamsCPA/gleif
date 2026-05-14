@@ -41,7 +41,7 @@ select = [
     "SLF", "SIM", "TID", "ARG", "PGH", "PL", "TRY",
     "FLY", "PERF", "RUF", "BLE", "EM", "FA", "G",
     "T10", "C901",
-    "ANN", "DTZ", "FBT", "FURB", "INP", "LOG", "PYI",
+    "ANN", "DTZ", "ERA", "FBT", "FURB", "INP", "LOG", "PYI",
     "Q", "S", "T20", "TCH", "YTT", "ASYNC",
 ]
 ignore = [
@@ -115,4 +115,6 @@ dev = [
     "pip-audit>=2.7",
     "bandit[toml]>=1.7",
     "mkdocs-material>=9.5,<10",
+    "darglint>=1.8.1",
+    "interrogate>=1.7.0",
 ]

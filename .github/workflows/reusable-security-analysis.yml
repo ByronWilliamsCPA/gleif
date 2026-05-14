@@ -18,7 +18,7 @@ jobs:
       security_files: ${{ steps.filter.outputs.security }}
     steps:
       - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -47,19 +47,19 @@ jobs:
       pull-requests: write
     steps:
       - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Dependency Review
-        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
           license-check: true
           comment-summary-in-pr: always
-          deny-license-types: GPL-2.0, GPL-3.0
+          deny-licenses: GPL-2.0, GPL-3.0
 
   security-scanning:
     name: Bandit Security Scan
@@ -69,11 +69,9 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-    env:
-      UV_CACHE_DIR: ~/.cache/uv
     steps:
       - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -85,7 +83,7 @@ jobs:
           python-version: ${{ inputs.python-version }}
 
       - name: Install UV
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
@@ -101,7 +99,7 @@ jobs:
 
       - name: Upload Security Reports
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: security-scan-reports
           path: bandit-report.json
@@ -115,7 +113,7 @@ jobs:
       contents: read
     steps:
       - name: Harden the runner (Audit outbound calls)
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -123,15 +121,16 @@ jobs:
 
       - name: Run OSV Scanner
         id: osv-scan
-        uses: google/osv-scanner-action/osv-scanner-action@c51854704019a247608d928f370c98740469d4b5 # v2.3.5
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@9a498708959aeaef5ef730655706c5a1df1edbc2 # v2.3.8
         with:
           scan-args: |-
             --lockfile=uv.lock
             --format=json
             --output=osv-results.json
-        continue-on-error: true
 
       - name: Check OSV Results for HIGH/CRITICAL
+        if: always()
         run: |
           osv_ok="${{ steps.osv-scan.outcome }}"
           if [ "$osv_ok" != "success" ] && \
@@ -181,20 +180,25 @@ jobs:
 
       - name: Upload OSV Scanner Report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: osv-scanner-results
           path: osv-results.json
           if-no-files-found: warn
 
   security-gate:
-    name: Security Gate
+    name: Security Gate Validation
     runs-on: ubuntu-latest
     needs: [detect-changes, dependency-security, security-scanning, osv-scanner]
     if: always()
     permissions:
       contents: read
     steps:
+      - name: Harden the runner (Audit outbound calls)
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
+        with:
+          egress-policy: block
+
       - name: Security Gate Results
         run: |
           is_acceptable() {
