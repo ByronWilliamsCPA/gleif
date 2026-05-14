@@ -35,7 +35,8 @@ jobs:
         run: |
           mkdir -p release-assets
           if ! gh release download "$RELEASE_TAG" --dir release-assets/; then
-            asset_count=$(gh release view "$RELEASE_TAG" --json assets --jq '.assets | length' 2>/dev/null || echo "unknown")
+            asset_count=$(gh release view "$RELEASE_TAG" \
+              --json assets --jq '.assets | length' 2>/dev/null || echo "unknown")
             if [ "$asset_count" = "0" ]; then
               echo "No assets attached to release $RELEASE_TAG; skipping signing" >&2
               echo "skip=true" >> "$GITHUB_OUTPUT"
