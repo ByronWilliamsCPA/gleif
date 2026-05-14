@@ -43,10 +43,7 @@ jobs:
       include-macos: true
       include-windows: true
       source-directory: 'src'
-      test-command: >-
-        pytest tests/ -v --tb=short -x
-        --ignore=tests/integration --ignore=tests/load
-        -m "not slow and not integration"
+      test-command: pytest tests/ -v --tb=short -x
       coverage-report: false
       fail-fast: false
       timeout-minutes: 30
