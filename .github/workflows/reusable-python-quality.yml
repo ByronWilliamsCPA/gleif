@@ -52,7 +52,9 @@ jobs:
         run: uv run ruff check .
 
       - name: Type checking (BasedPyright strict)
-        run: uv run basedpyright ${{ inputs.source-dir }}
+        env:
+          SOURCE_DIR: ${{ inputs.source-dir }}
+        run: uv run basedpyright "$SOURCE_DIR"
 
       - name: Build documentation (strict)
         if: inputs.build-docs

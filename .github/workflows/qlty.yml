@@ -9,7 +9,8 @@ on:
     types:
       - completed
 
-permissions: read-all
+permissions:
+  actions: read
 
 concurrency:
   group: qlty-coverage-${{ github.event.workflow_run.head_branch }}
@@ -20,7 +21,6 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/reusable-qlty-coverage.yml
     permissions:
-      contents: read
       actions: read
     secrets:
       QLTY_COVERAGE_TOKEN: ${{ secrets.QLTY_COVERAGE_TOKEN }}
