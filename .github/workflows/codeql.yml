@@ -15,7 +15,11 @@ on:
     - cron: '19 5 * * 4'  # Weekly Thursday 5:19 AM UTC
   workflow_dispatch:
 
-permissions: read-all
+permissions:
+  security-events: write
+  packages: read
+  actions: read
+  contents: read
 
 jobs:
   codeql:

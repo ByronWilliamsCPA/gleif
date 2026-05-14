@@ -9,7 +9,9 @@ on:
     types:
       - completed
 
-permissions: read-all
+permissions:
+  contents: read
+  actions: read
 
 concurrency:
   group: qlty-coverage-${{ github.event.workflow_run.head_branch }}
