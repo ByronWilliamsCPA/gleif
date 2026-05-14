@@ -41,6 +41,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Security
 
+- Fixed script injection in `reusable-python-quality.yml` (`githubactions:S7630`):
+  `inputs.source-dir` was interpolated directly in a `run` block and is now routed
+  through a `SOURCE_DIR` environment variable before shell expansion
+- Replaced `permissions: read-all` with least-privilege permission blocks in all
+  top-level workflow files (`githubactions:S8234`): `ci.yml`, `codeql.yml`,
+  `qlty.yml`, `release.yml`, `scorecard.yml`, `security-analysis.yml`
 - Fixed ZIP path traversal in `_extract_zip()` (no CVE; internal finding)
 
 ## [0.1.0] - 2026-04-26
