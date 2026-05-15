@@ -36,6 +36,7 @@ jobs:
       python-version: '3.11'
       source-directory: src
       no-build: false
+      coverage-threshold: 65
 
   ci-gate:
     name: CI Gate
