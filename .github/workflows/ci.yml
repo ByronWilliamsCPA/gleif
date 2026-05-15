@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   ci:
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@e067cdb7294f6221dbde74ef1f4c3ca735eed570 # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@4e0fd54428d6745b04e2316f85d585109d7db02b # main
     permissions:
       contents: read
       checks: write
@@ -35,6 +35,7 @@ jobs:
     with:
       python-version: '3.11'
       source-directory: src
+      no-build: false
 
   ci-gate:
     name: CI Gate
