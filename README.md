@@ -84,6 +84,36 @@ gleif status
 
 Data is stored at `~/.local/share/gleif/` by default.
 
+## Data Freshness & Update Schedule
+
+GLEIF publishes the golden copy datasets **three times per day** at
+`00:00`, `08:00`, and `16:00` UTC. Each publish is identified by an
+`x-gleif-publish-date` HTTP header on the download URL.
+
+This CLI uses that header to short-circuit redundant downloads:
+
+- On every `gleif download` / `gleif refresh`, the tool sends an HTTP `HEAD`
+  request to each of the three dataset endpoints and reads the
+  `x-gleif-publish-date` header.
+- If the remote publish date matches the locally stored marker
+  (`<dataset>_publish_date.txt` inside the data directory) and the previously
+  extracted CSV is still on disk, the download is skipped.
+- Pass `--force` to bypass the freshness check and always re-download.
+
+Recommended cadence: run `gleif refresh` daily or every 8 hours via cron /
+systemd timer / Task Scheduler if you want to track each publish window.
+Use `gleif status` to see the publish date and load timestamp for each
+dataset currently in the local database.
+
+The three datasets and their endpoints (all served over HTTPS from
+`goldencopy.gleif.org`):
+
+| Dataset | Endpoint |
+| ------- | -------- |
+| Level 1 LEI | `/api/v2/golden-copies/publishes/lei2/latest.csv` |
+| Level 2 Relationships | `/api/v2/golden-copies/publishes/rr/latest.csv` |
+| Level 2 Reporting Exceptions | `/api/v2/golden-copies/publishes/repex/latest.csv` |
+
 ## Architecture
 
 Three GLEIF datasets are downloaded as ZIPs, extracted to CSV, and bulk-loaded
