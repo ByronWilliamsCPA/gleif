@@ -42,6 +42,7 @@ jobs:
     permissions:
       contents: read
       checks: write
+      pull-requests: write
     with:
       python-version: '3.11'
       coverage-source: gleif
