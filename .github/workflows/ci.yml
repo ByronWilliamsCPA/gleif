@@ -41,6 +41,7 @@ jobs:
     uses: ./.github/workflows/reusable-python-test.yml
     permissions:
       contents: read
+      checks: write
     with:
       python-version: '3.11'
       coverage-source: gleif
