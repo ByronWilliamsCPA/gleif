@@ -1,4 +1,44 @@
-"""DuckDB schema creation, data loading, and connection management."""
+"""DuckDB schema creation, bulk CSV loading, and connection management.
+
+This module owns the local persistence layer for GLEIF data. It
+opens connections to a DuckDB file, declares the three data tables
+plus a small ``load_metadata`` tracking table, and bulk-loads the
+extracted golden copy CSVs via DuckDB's ``read_csv`` reader. CSV
+columns are projected and renamed on the fly using the
+``LEI_CORE_COLUMNS``, ``RR_CORE_COLUMNS``, and ``REPEX_COLUMNS``
+mappings from :mod:`gleif.constants`.
+
+Schema overview
+---------------
+======================  =================================================
+Table                   Key
+======================  =================================================
+``lei_records``         ``lei``
+``relationships``       ``(start_node_id, end_node_id, relationship_type)``
+``reporting_exceptions``  ``(lei, exception_category)``
+``load_metadata``       ``dataset_type``
+======================  =================================================
+
+For relationships, ``start_node_id`` is the child LEI and
+``end_node_id`` is the parent LEI - matching the GLEIF Level 2 RR
+file convention.
+
+Usage
+-----
+.. code-block:: python
+
+    from gleif.constants import DEFAULT_DB_PATH
+    from gleif.db import get_connection, load_all
+    from gleif.download import download_all
+    import asyncio
+
+    results = asyncio.run(download_all(DEFAULT_DB_PATH.parent / "data"))
+    con = get_connection(DEFAULT_DB_PATH)
+    try:
+        counts = load_all(con, results)
+    finally:
+        con.close()
+"""
 
 from __future__ import annotations
 
@@ -29,11 +69,18 @@ console = Console()
 def get_connection(db_path: Path) -> duckdb.DuckDBPyConnection:
     """Open or create a DuckDB database at the given path.
 
+    The parent directory is created if it does not exist. Callers are
+    responsible for closing the returned connection (typically via a
+    ``try/finally`` block). DuckDB raises ``duckdb.IOException`` if
+    the path cannot be opened for writing (permissions, full disk,
+    etc.).
+
     Args:
-        db_path: Path to the DuckDB file.
+        db_path: Filesystem path to the DuckDB database file. If the
+            file does not yet exist, DuckDB will create an empty one.
 
     Returns:
-        An open DuckDB connection.
+        An open ``duckdb.DuckDBPyConnection``.
     """
     db_path.parent.mkdir(parents=True, exist_ok=True)
     return duckdb.connect(str(db_path))
@@ -137,10 +184,13 @@ _INDEXES = [
 
 
 def create_schema(con: duckdb.DuckDBPyConnection) -> None:
-    """Create the load_metadata tracking table.
+    """Create the ``load_metadata`` tracking table.
 
-    Data tables (lei_records, relationships, reporting_exceptions) are created
-    during loading via CREATE OR REPLACE TABLE ... AS SELECT ... FROM read_csv().
+    Data tables (``lei_records``, ``relationships``,
+    ``reporting_exceptions``) are created during loading via
+    ``CREATE OR REPLACE TABLE ... AS SELECT ... FROM read_csv()``
+    in the corresponding ``load_*`` helpers, so this function only
+    needs to create the auxiliary tracking table.
 
     Args:
         con: Open DuckDB connection.
@@ -149,7 +199,17 @@ def create_schema(con: duckdb.DuckDBPyConnection) -> None:
 
 
 def create_indexes(con: duckdb.DuckDBPyConnection) -> None:
-    """Create indexes after bulk loading."""
+    """Create secondary indexes after bulk loading.
+
+    Indexes cover the ``relationships`` join columns
+    (``start_node_id``, ``end_node_id``, ``relationship_type``,
+    ``relationship_status``) and the ``reporting_exceptions.lei``
+    lookup column. Building indexes after the bulk insert is faster
+    than maintaining them during the insert.
+
+    Args:
+        con: Open DuckDB connection.
+    """
     for stmt in _INDEXES:
         con.execute(stmt)
 
@@ -180,12 +240,22 @@ def _build_select_clause(column_map: dict[str, str]) -> str:
 def load_lei_records(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     """Load Level 1 LEI records from an extracted CSV.
 
+    Issues ``CREATE OR REPLACE TABLE lei_records AS SELECT ...``,
+    projecting only the ~30 core columns listed in
+    :data:`gleif.constants.LEI_CORE_COLUMNS` out of the ~338 columns
+    in the source CSV. All columns are read as ``VARCHAR`` to avoid
+    type inference issues on optional fields; downstream queries
+    cast as needed. DuckDB raises ``duckdb.IOException`` if the CSV
+    file cannot be read, or ``duckdb.InvalidInputException`` if the
+    CSV is missing one of the column headers in
+    :data:`gleif.constants.LEI_CORE_COLUMNS`.
+
     Args:
         con: Open DuckDB connection.
         csv_path: Path to the extracted Level 1 CSV file.
 
     Returns:
-        Number of rows loaded.
+        Number of rows loaded into ``lei_records``.
     """
     select_clause = _build_select_clause(LEI_CORE_COLUMNS)
     sql = f"""
@@ -208,12 +278,18 @@ def load_lei_records(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
 def load_relationships(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     """Load Level 2 relationship records from an extracted CSV.
 
+    Projects the columns in :data:`gleif.constants.RR_CORE_COLUMNS`.
+    ``start_node_id`` is the child LEI and ``end_node_id`` is the
+    parent LEI in the GLEIF Level 2 schema. DuckDB raises
+    ``duckdb.IOException`` if the CSV file cannot be read, or
+    ``duckdb.InvalidInputException`` if required columns are missing.
+
     Args:
         con: Open DuckDB connection.
         csv_path: Path to the extracted Level 2 RR CSV file.
 
     Returns:
-        Number of rows loaded.
+        Number of rows loaded into ``relationships``.
     """
     select_clause = _build_select_clause(RR_CORE_COLUMNS)
     sql = f"""
@@ -235,12 +311,17 @@ def load_relationships(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
 def load_reporting_exceptions(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     """Load Level 2 reporting exceptions from an extracted CSV.
 
+    Projects the columns in :data:`gleif.constants.REPEX_COLUMNS`.
+    DuckDB raises ``duckdb.IOException`` if the CSV file cannot be
+    read, or ``duckdb.InvalidInputException`` if required columns
+    are missing.
+
     Args:
         con: Open DuckDB connection.
         csv_path: Path to the extracted Level 2 exceptions CSV file.
 
     Returns:
-        Number of rows loaded.
+        Number of rows loaded into ``reporting_exceptions``.
     """
     select_clause = _build_select_clause(REPEX_COLUMNS)
     sql = f"""
@@ -265,7 +346,14 @@ def update_metadata(
     publish_date: str,
     record_count: int,
 ) -> None:
-    """Insert or update the load metadata for a dataset."""
+    """Insert or update the ``load_metadata`` row for a dataset.
+
+    Args:
+        con: Open DuckDB connection.
+        dataset_type: Which dataset was loaded.
+        publish_date: GLEIF publish date for the loaded CSV.
+        record_count: Number of rows loaded.
+    """
     con.execute(
         """
         INSERT OR REPLACE INTO load_metadata
@@ -287,9 +375,19 @@ def load_all(
 ) -> dict[DatasetType, int]:
     """Load all downloaded datasets into DuckDB.
 
+    Creates the ``load_metadata`` tracking table, dispatches to the
+    appropriate ``load_*`` helper for each result, records the
+    publish date and row count in ``load_metadata``, and finally
+    builds the secondary indexes. Progress is printed via Rich.
+    Propagates ``KeyError`` if a :class:`DownloadResult` references
+    an unknown dataset type, and ``duckdb.IOException`` if a CSV
+    file cannot be read.
+
     Args:
         con: Open DuckDB connection.
-        download_results: List of DownloadResult from the download phase.
+        download_results: List of :class:`DownloadResult` from the
+            download phase. Order does not matter; the function
+            dispatches by ``dataset_type``.
 
     Returns:
         Mapping of dataset type to number of rows loaded.
@@ -325,11 +423,17 @@ def get_status(
 ) -> list[tuple[str, str, str, int]]:
     """Get load metadata for all datasets.
 
+    Useful for surfacing data freshness; the ``gleif status`` CLI
+    command renders this as a Rich table.
+
     Args:
         con: Open DuckDB connection.
 
     Returns:
-        List of (dataset_type, publish_date, loaded_at, record_count) tuples.
+        List of ``(dataset_type, publish_date, loaded_at,
+        record_count)`` tuples, ordered by dataset type. Returns an
+        empty list if the ``load_metadata`` table does not exist
+        (i.e. no data has ever been loaded into this database).
     """
     try:
         rows = con.execute(

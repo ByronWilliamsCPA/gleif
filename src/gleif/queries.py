@@ -1,4 +1,32 @@
-"""Relationship query functions for LEI lookups."""
+"""Typed query helpers for LEI lookups and hierarchy traversal.
+
+Every helper in this module takes an open ``duckdb.DuckDBPyConnection``
+as its first argument and returns one of the frozen dataclasses
+defined in :mod:`gleif.models`. Queries only consider relationship
+rows with ``relationship_status = 'ACTIVE'``; relationships that
+have lapsed or been retired are ignored.
+
+LEI format
+----------
+A Legal Entity Identifier is a 20-character ISO 17442 code consisting
+of uppercase ASCII alphanumerics and a 2-character checksum. The
+query helpers do not validate the format - the caller is responsible
+for normalisation (``lei.strip().upper()`` is what the CLI does). An
+unrecognised or malformed LEI is treated as "not found" and the
+relevant helper returns ``None`` or an empty list.
+
+Edge cases
+----------
+* Lookups against a database that has not yet been populated raise
+  ``duckdb.CatalogException`` from DuckDB (the tables do not exist).
+* When a parent relationship has been replaced with a reporting
+  exception, ``get_parent`` returns ``None`` and
+  ``get_reporting_exceptions`` returns the rationale.
+* When the Level 1 and Level 2 datasets are published at slightly
+  different times an LEI may appear in ``relationships`` but be
+  missing from ``lei_records``; ``RelatedEntity.legal_name`` will be
+  ``None`` in that case.
+"""
 
 from __future__ import annotations
 
@@ -56,10 +84,13 @@ def get_entity(con: duckdb.DuckDBPyConnection, lei: str) -> EntityInfo | None:
 
     Args:
         con: Open DuckDB connection.
-        lei: The LEI to look up.
+        lei: The 20-character LEI to look up. Case sensitive - GLEIF
+            stores LEIs in uppercase, so callers should normalise
+            with ``lei.strip().upper()`` before passing.
 
     Returns:
-        EntityInfo or None if not found.
+        :class:`gleif.models.EntityInfo` for the matching row, or
+        ``None`` if the LEI is not present in ``lei_records``.
     """
     row = con.execute(
         f"SELECT {_ENTITY_COLS} FROM lei_records l WHERE l.lei = $1",
@@ -77,14 +108,25 @@ def get_parent(
 ) -> EntityInfo | None:
     """Find a parent entity via the relationships table.
 
+    Joins the active relationship row for ``lei`` against
+    ``lei_records`` so the returned ``EntityInfo`` carries the full
+    Level 1 metadata. If the parent LEI is referenced by an active
+    relationship but is itself missing from ``lei_records`` (Level 1
+    / Level 2 publish lag), this returns ``None``.
+
     Args:
         con: Open DuckDB connection.
-        lei: The child LEI.
-        relationship_type: IS_DIRECTLY_CONSOLIDATED_BY or
-            IS_ULTIMATELY_CONSOLIDATED_BY.
+        lei: The child LEI to look up the parent for.
+        relationship_type: Either
+            :data:`gleif.constants.DIRECT_PARENT`
+            (``"IS_DIRECTLY_CONSOLIDATED_BY"``) or
+            :data:`gleif.constants.ULTIMATE_PARENT`
+            (``"IS_ULTIMATELY_CONSOLIDATED_BY"``).
 
     Returns:
-        EntityInfo of the parent, or None.
+        :class:`gleif.models.EntityInfo` for the parent, or ``None``
+        if there is no active parent relationship of that type, or
+        the parent LEI is missing from ``lei_records``.
     """
     row = con.execute(
         f"""
@@ -110,12 +152,20 @@ def get_parent(
 def get_children(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity]:
     """Find all entities that report this LEI as a parent.
 
+    Returns every entity whose active relationship row points at
+    ``lei`` as the ``end_node_id``, regardless of relationship type
+    (direct, ultimate, branch, fund, etc.). To restrict to direct
+    consolidation children, filter the result by
+    ``relationship_type == DIRECT_PARENT``.
+
     Args:
         con: Open DuckDB connection.
         lei: The parent LEI.
 
     Returns:
-        List of child RelatedEntity records.
+        List of :class:`gleif.models.RelatedEntity` (one per
+        relationship row), ordered by ``legal_name``. Empty list if
+        no children are recorded.
     """
     rows = con.execute(
         """
@@ -142,14 +192,21 @@ def get_children(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity
 
 
 def get_siblings(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity]:
-    """Find entities sharing the same direct parent.
+    """Find entities sharing the same direct parent as ``lei``.
+
+    Two entities are siblings here iff they share an active
+    ``IS_DIRECTLY_CONSOLIDATED_BY`` relationship pointing at the
+    same parent LEI. Entities that share only an ultimate parent
+    (i.e. cousins) are not returned.
 
     Args:
         con: Open DuckDB connection.
-        lei: The LEI to find siblings for.
+        lei: The LEI whose siblings to find.
 
     Returns:
-        List of sibling RelatedEntity records (excludes the queried LEI).
+        List of :class:`gleif.models.RelatedEntity` (excludes the
+        queried LEI itself), ordered by ``legal_name``. Empty list
+        if ``lei`` has no direct parent or is an only child.
     """
     rows = con.execute(
         """
@@ -187,14 +244,23 @@ def get_siblings(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity
 def get_other_relationships(
     con: duckdb.DuckDBPyConnection, lei: str
 ) -> list[RelatedEntity]:
-    """Find non-consolidation relationships (branches, funds, etc.).
+    """Find non-consolidation relationships for an LEI.
+
+    Returns active relationships in either direction whose type is
+    *not* :data:`gleif.constants.DIRECT_PARENT` or
+    :data:`gleif.constants.ULTIMATE_PARENT`. In practice this
+    surfaces international branch, fund-management, and umbrella
+    relationships.
 
     Args:
         con: Open DuckDB connection.
         lei: The LEI to query.
 
     Returns:
-        List of RelatedEntity with direction="other".
+        List of :class:`gleif.models.RelatedEntity` with
+        ``direction="other"``, ordered by ``legal_name``. The
+        ``lei`` field is the *other* end of the relationship (i.e.
+        not the queried LEI).
     """
     rows = con.execute(
         """
@@ -231,14 +297,21 @@ def get_other_relationships(
 def get_reporting_exceptions(
     con: duckdb.DuckDBPyConnection, lei: str
 ) -> list[ReportingException]:
-    """Get all reporting exceptions for an LEI.
+    """Get all reporting exceptions filed against an LEI.
+
+    Reporting exceptions are filed when an entity is unable or
+    unwilling to report a parent relationship (for example, because
+    no consolidating parent exists, or consent could not be
+    obtained). An LEI can have at most one exception per category.
 
     Args:
         con: Open DuckDB connection.
         lei: The LEI to query.
 
     Returns:
-        List of ReportingException records.
+        List of :class:`gleif.models.ReportingException`, ordered by
+        ``exception_category``. Empty list if no exceptions are on
+        file.
     """
     rows = con.execute(
         """
@@ -287,20 +360,26 @@ def get_ancestor_chain(
     *,
     max_depth: int = MAX_HIERARCHY_DEPTH,
 ) -> list[HierarchyNode]:
-    """Walk UP from an entity to its ultimate parent via direct-parent links.
+    """Walk UP from an entity to its ultimate parent.
 
-    Returns a list of HierarchyNode ordered by depth (0 = starting entity,
-    1 = direct parent, 2 = grandparent, etc.).  Uses path tracking to
-    prevent cycles.
+    Uses a recursive CTE that follows
+    :data:`gleif.constants.DIRECT_PARENT` relationships from child
+    to parent. Tracks the visited path to break cycles defensively
+    (the data is meant to be acyclic but malformed entries do
+    occur).
 
     Args:
         con: Open DuckDB connection.
         lei: The starting LEI.
-        max_depth: Maximum recursion depth.
+        max_depth: Upper bound on recursion depth. Defaults to
+            :data:`gleif.constants.MAX_HIERARCHY_DEPTH`.
 
     Returns:
-        List of HierarchyNode from entity to root, or empty if LEI
-        not found.
+        List of :class:`gleif.models.HierarchyNode` ordered by depth
+        (0 = starting entity, 1 = direct parent, 2 = grandparent,
+        ...). Empty list if ``lei`` is not present in
+        ``lei_records``. The last element is the ultimate parent of
+        ``lei`` within the depth bound.
     """
     rows = con.execute(
         """
@@ -344,21 +423,26 @@ def get_descendant_tree(
     *,
     max_depth: int = MAX_HIERARCHY_DEPTH,
 ) -> list[HierarchyNode]:
-    """Walk DOWN from an entity to all descendants via direct-parent links.
+    """Walk DOWN from an entity to all descendants.
 
-    Returns a flat list of HierarchyNode ordered by (depth, legal_name).
-    The starting entity is at depth 0.  Uses path tracking to prevent
-    cycles; diamond structures are deduplicated via first-parent-wins
-    (shallowest depth kept).
+    Uses a recursive CTE that follows
+    :data:`gleif.constants.DIRECT_PARENT` relationships from parent
+    to child. Uses path tracking to prevent cycles, and applies a
+    ``ROW_NUMBER() PARTITION BY node_lei ORDER BY depth`` filter so
+    diamond structures (an entity reachable from the root via two
+    different paths) appear exactly once, at the shallowest depth.
 
     Args:
         con: Open DuckDB connection.
-        lei: The root LEI to walk down from.
-        max_depth: Maximum recursion depth.
+        lei: The LEI to root the traversal at.
+        max_depth: Upper bound on recursion depth. Defaults to
+            :data:`gleif.constants.MAX_HIERARCHY_DEPTH`.
 
     Returns:
-        List of HierarchyNode for the entire subtree, or empty if LEI
-        not found.
+        Flat list of :class:`gleif.models.HierarchyNode` for the
+        entire subtree, ordered by ``(depth, legal_name)``. The
+        starting entity is at depth 0. Empty list if ``lei`` is not
+        present in ``lei_records``.
     """
     rows = con.execute(
         """
@@ -413,16 +497,34 @@ def get_corporate_group(
 ) -> CorporateGroup | None:
     """Build a complete corporate group for any entity in the hierarchy.
 
-    Walks UP to find the ultimate parent, then DOWN to retrieve the full
-    descendant tree.
+    Internally walks UP from ``lei`` via
+    :func:`get_ancestor_chain` to find the ultimate parent, then
+    DOWN via :func:`get_descendant_tree` to retrieve the entire
+    subtree. The caller may pass any LEI in the group; the result
+    is rooted at the ultimate parent regardless.
 
     Args:
         con: Open DuckDB connection.
-        lei: Any LEI in the corporate group.
-        max_depth: Maximum recursion depth for traversal.
+        lei: Any LEI in the corporate group of interest.
+        max_depth: Upper bound on recursion depth for both the
+            up-walk and the down-walk. Defaults to
+            :data:`gleif.constants.MAX_HIERARCHY_DEPTH`.
 
     Returns:
-        CorporateGroup or None if the LEI is not found.
+        :class:`gleif.models.CorporateGroup` with the root entity
+        and the flat descendant list, or ``None`` if ``lei`` is not
+        present in ``lei_records``.
+
+    Example:
+        >>> from gleif.constants import DEFAULT_DB_PATH
+        >>> from gleif.db import get_connection
+        >>> from gleif.queries import get_corporate_group
+        >>> con = get_connection(DEFAULT_DB_PATH)  # doctest: +SKIP
+        >>> group = get_corporate_group(con, "2138005YL12BKW2FQA89")  # doctest: +SKIP
+        >>> group.root.legal_name  # doctest: +SKIP
+        'APPLE INC.'
+        >>> len(group.descendants)  # doctest: +SKIP
+        42
     """
     entity = get_entity(con, lei)
     if entity is None:
@@ -454,13 +556,28 @@ def search_by_name(
 ) -> list[EntityInfo]:
     """Search for entities whose legal name contains the given string.
 
+    Uses DuckDB ``ILIKE`` for case-insensitive substring matching;
+    the query string is wrapped in ``%`` wildcards. The match is
+    against ``Entity.LegalName`` only - aliases and previous names
+    are not searched (they are not loaded into the local schema).
+
     Args:
         con: Open DuckDB connection.
-        name: Case-insensitive substring to match against legal_name.
-        limit: Maximum number of results to return.
+        name: Substring to match. Matched case-insensitively.
+        limit: Maximum number of results to return. Defaults to 100.
 
     Returns:
-        List of matching EntityInfo records, ordered by legal_name.
+        List of :class:`gleif.models.EntityInfo` ordered by
+        ``legal_name``. Empty list if nothing matches.
+
+    Example:
+        >>> from gleif.constants import DEFAULT_DB_PATH
+        >>> from gleif.db import get_connection
+        >>> from gleif.queries import search_by_name
+        >>> con = get_connection(DEFAULT_DB_PATH)  # doctest: +SKIP
+        >>> results = search_by_name(con, "Apple", limit=5)  # doctest: +SKIP
+        >>> [e.legal_name for e in results]  # doctest: +SKIP
+        ['Apple Inc.', 'Apple Operations International Limited', ...]
     """
     rows = con.execute(
         f"""
@@ -480,12 +597,35 @@ def get_full_report(
 ) -> LEIRelationshipReport | None:
     """Build a complete relationship report for an LEI.
 
+    Aggregates one call to each of :func:`get_entity`,
+    :func:`get_parent` (for both DIRECT and ULTIMATE),
+    :func:`get_children`, :func:`get_siblings`,
+    :func:`get_other_relationships`, and
+    :func:`get_reporting_exceptions` into a single
+    :class:`gleif.models.LEIRelationshipReport`.
+
     Args:
         con: Open DuckDB connection.
-        lei: The LEI to query.
+        lei: The 20-character LEI to query. Case sensitive; callers
+            should normalise to uppercase.
 
     Returns:
-        LEIRelationshipReport or None if the LEI is not found.
+        :class:`gleif.models.LEIRelationshipReport` with all
+        relationship slices populated, or ``None`` if ``lei`` is
+        not present in ``lei_records``.
+
+    Example:
+        >>> from gleif.constants import DEFAULT_DB_PATH
+        >>> from gleif.db import get_connection
+        >>> from gleif.queries import get_full_report
+        >>> con = get_connection(DEFAULT_DB_PATH)  # doctest: +SKIP
+        >>> report = get_full_report(con, "2138005YL12BKW2FQA89")  # doctest: +SKIP
+        >>> report.entity.legal_name  # doctest: +SKIP
+        'APPLE INC.'
+        >>> report.direct_parent is None  # doctest: +SKIP
+        False
+        >>> [c.legal_name for c in report.children][:2]  # doctest: +SKIP
+        ['Apple Operations International Limited', ...]
     """
     entity = get_entity(con, lei)
     if entity is None:

@@ -1,21 +1,49 @@
-"""Fetch ISIN mappings from the GLEIF API."""
+"""Fetch ISIN mappings from the GLEIF REST API.
+
+ISINs (International Securities Identification Numbers) are not part
+of the golden copy CSV files. Instead, GLEIF exposes them through a
+JSON:API endpoint:
+
+    GET https://api.gleif.org/api/v1/lei-records/<LEI>/isins
+
+The response follows the JSON:API envelope: a top-level ``"data"``
+array of objects with an ``"attributes"`` dict containing an
+``"isin"`` field.
+
+The helpers below are intended for *interactive* enrichment of
+already-known LEIs (the CLI surfaces them behind the ``--isin``
+flag). They are not designed for bulk ETL: each LEI requires a
+separate HTTP request, and GLEIF rate-limits the public API.
+
+Error handling: every HTTP failure (network, 4xx, 5xx, malformed
+JSON wrapped as HTTP error) is swallowed and yields an empty result
+for the affected LEI. This is deliberate - one LEI without ISINs
+should not abort an entire enrichment pass.
+"""
 
 from __future__ import annotations
 
 import httpx
 
+#: Base URL for the GLEIF public LEI records REST API.
 GLEIF_API_BASE = "https://api.gleif.org/api/v1/lei-records"
 _REQUEST_TIMEOUT = 10.0
 
 
 def fetch_isins(lei: str) -> list[str]:
-    """Fetch ISINs associated with an LEI from the GLEIF API.
+    """Fetch ISINs associated with an LEI from the GLEIF REST API.
+
+    Hits ``GET {GLEIF_API_BASE}/{lei}/isins`` with a 10-second
+    timeout. Any HTTP error (network failure, 4xx, 5xx) is caught
+    and treated as "no ISINs".
 
     Args:
-        lei: The LEI to look up.
+        lei: The 20-character LEI to look up.
 
     Returns:
-        List of ISIN strings, or empty list on error/no data.
+        List of ISIN strings. Empty list if the LEI has no
+        associated ISINs, the LEI is unknown to GLEIF, or any HTTP
+        error occurs.
     """
     try:
         response = httpx.get(
@@ -35,13 +63,19 @@ def fetch_isins(lei: str) -> list[str]:
 
 
 def fetch_isins_batch(leis: list[str]) -> dict[str, list[str]]:
-    """Fetch ISINs for multiple LEIs concurrently.
+    """Fetch ISINs for multiple LEIs sequentially over one HTTP client.
+
+    Reuses a single ``httpx.Client`` (HTTP keep-alive) and issues
+    one request per LEI. LEIs with HTTP errors or no ISINs are
+    omitted from the result.
 
     Args:
-        leis: List of LEIs to look up.
+        leis: List of 20-character LEIs to look up.
 
     Returns:
-        Mapping of LEI to list of ISINs.
+        Mapping of LEI to list of ISINs. LEIs without any ISINs (or
+        for which the lookup failed) are not present as keys, so
+        ``result.get(lei, [])`` is the safe access pattern.
     """
     results: dict[str, list[str]] = {}
     with httpx.Client(timeout=_REQUEST_TIMEOUT) as client:

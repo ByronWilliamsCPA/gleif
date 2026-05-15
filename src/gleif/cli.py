@@ -1,4 +1,24 @@
-"""Typer CLI for GLEIF golden copy data management and LEI queries."""
+"""Typer CLI for GLEIF golden copy data management and LEI queries.
+
+This module defines the ``gleif`` console script entry point exposed
+in ``pyproject.toml`` (``[project.scripts]``). The CLI wraps the
+library functions in :mod:`gleif.download`, :mod:`gleif.db`, and
+:mod:`gleif.queries` with Rich-rendered output.
+
+Subcommands
+-----------
+* ``download`` - fetch the three golden copy archives.
+* ``load`` - load already-downloaded CSVs into DuckDB.
+* ``refresh`` - download + load in one step.
+* ``lei`` - look up an LEI and print its relationship report or
+  full hierarchy tree.
+* ``name`` - substring search over legal names.
+* ``status`` - print row counts and publish dates per dataset.
+
+The ``app`` object is the importable ``typer.Typer`` instance, used
+both by the installed script and by the test suite (via
+``typer.testing.CliRunner``).
+"""
 
 from __future__ import annotations
 
