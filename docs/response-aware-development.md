@@ -63,8 +63,6 @@ We classify assumptions by potential impact and route them to appropriate models
 | 2 | #ASSUME | Functional bugs, UX issues | Sonnet 4.6 | Standard verification, code review |
 | 3 | #EDGE | Rare scenarios, optimizations | Haiku 4.5 | Quick lookups, structural checks |
 
-See `CLAUDE.md` Model Selection section for the authoritative model assignment rules.
-
 ## Implementation Strategy
 
 ### Phase 1: Tagging (Current)
