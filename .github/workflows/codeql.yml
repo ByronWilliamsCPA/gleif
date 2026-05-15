@@ -16,7 +16,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.event_name }}-codeql-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:

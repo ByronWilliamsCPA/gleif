@@ -34,15 +34,17 @@ AI coding assistants (including Claude) make implicit assumptions that:
 
 ### Real-World Impact
 
-```javascript
-// This code killed production at 3 AM:
-setUserData(newData);
-navigateToProfile(userData.id);  // Assumes state updated - WRONG!
+```python
+# This code killed production at 3 AM:
+conn = get_connection()
+results = conn.execute("SELECT * FROM lei_records WHERE lei = ?", [lei]).fetchall()
+# Assumes connection is always valid and table is loaded - WRONG under cold start
 
-// This code survived production:
-setUserData(newData, () => {
-  navigateToProfile(userData.id);  // Waits for confirmation
-});
+# This code survived production:
+conn = get_connection()
+if conn is None or not table_exists(conn, "lei_records"):
+    raise RuntimeError("Database not initialized; run 'gleif load' first")
+results = conn.execute("SELECT * FROM lei_records WHERE lei = ?", [lei]).fetchall()
 ```
 
 ## Solution Architecture
@@ -55,19 +57,11 @@ The key insight is that **the same context that made an assumption cannot effect
 
 We classify assumptions by potential impact and route them to appropriate models:
 
-| Tier | Tag | Risk Level | Model Selection | Cost |
-|------|-----|------------|-----------------|------|
-| 1 | #CRITICAL | Production outages, data loss | Premium (Gemini 2.5 Pro, O3-mini) | Paid |
-| 2 | #ASSUME | Functional bugs, UX issues | Dynamic free selection (DeepSeek-R1, Qwen) | Free |
-| 3 | #EDGE | Rare scenarios, optimizations | Fast free (Flash-lite) | Free |
-
-### Dynamic Model Selection
-
-Uses PAL MCP Server's intelligent routing to:
-
-- Select the best free model for each assumption type
-- Learn from patterns over time
-- Reduce cost by reserving premium models for critical assumptions only
+| Tier | Tag | Risk Level | Model | Use case |
+| ---- | --- | ---------- | ----- | -------- |
+| 1 | #CRITICAL | Production outages, data loss | Opus 4.7 | Multi-step decisions, deep reasoning |
+| 2 | #ASSUME | Functional bugs, UX issues | Sonnet 4.6 | Standard verification, code review |
+| 3 | #EDGE | Rare scenarios, optimizations | Haiku 4.5 | Quick lookups, structural checks |
 
 ## Implementation Strategy
 
@@ -176,17 +170,15 @@ To evaluate effectiveness after 30-60 days:
 
 ### Setup Requirements
 
-- [ ] PAL MCP Server configured and accessible
-- [ ] User-level CLAUDE.md updated with RAD standards
-- [ ] Slash command added to user configuration
+- [ ] `CLAUDE.md` updated with RAD tagging standards (see global `~/.claude/CLAUDE.md`)
+- [ ] Team members familiar with `#CRITICAL`, `#ASSUME`, `#EDGE` tag semantics
 - [ ] Pre-commit hooks configured (optional)
 
 ### Verification Points
 
 - [ ] Test with synthetic assumption examples
-- [ ] Verify model routing works correctly
-- [ ] Confirm cost tracking functioning
-- [ ] Validate parallel execution
+- [ ] Verify tags are caught during code review
+- [ ] Confirm `#VERIFY` instructions are actionable
 
 ### Monitoring Setup
 
@@ -199,34 +191,16 @@ To evaluate effectiveness after 30-60 days:
 
 ```bash
 # 1. Developer codes with Claude
-$ claude "implement user profile update"
-# Claude generates code with tagged assumptions
+$ claude "implement lei lookup with parent traversal"
+# Claude generates code with #CRITICAL/#ASSUME/#EDGE tags and #VERIFY instructions
 
-# 2. Before commit, verify assumptions
-$ /rad/verify --strategy tiered
-# System routes assumptions to appropriate models
+# 2. Before commit, review tagged assumptions
+$ grep -rn '#CRITICAL\|#ASSUME\|#EDGE' src/
+# Work through each #VERIFY instruction manually or via PR review
 
-# 3. Review and apply fixes
-$ git diff  # Review proposed fixes
-$ git add -p  # Selectively apply fixes
-
-# 4. Commit with confidence
-$ git commit -m "feat: user profile update with verified assumptions"
+# 3. Commit with assumptions documented
+$ git commit -m "feat: lei parent traversal with RAD assumption tags"
 ```
-
-## Future Enhancements
-
-### Phase 2 Features (Q2 2025)
-
-- Machine learning for assumption risk scoring
-- Production feedback loop integration
-- Cross-project pattern sharing
-
-### Phase 3 Features (Q3 2025)
-
-- Proactive assumption prevention in Claude
-- Industry-specific assumption libraries
-- Compliance-oriented verification modes
 
 ## Conclusion
 
@@ -238,6 +212,5 @@ Success will be measured by reduced production incidents, improved code quality,
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: 2025-01-31*
-*Next Review: 30 days after implementation*
+*Document Version: 1.1*
+*Last Updated: 2026-05-14*
