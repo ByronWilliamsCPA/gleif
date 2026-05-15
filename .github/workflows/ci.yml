@@ -1,18 +1,7 @@
 # GLEIF Golden Copy CLI - CI Pipeline
 #
-# CI FOCUS: Code Quality & Testing
-# This workflow handles code quality, formatting, type checking, and testing.
-# Security scanning is consolidated in security-analysis.yml.
-#
-# QUALITY CHECKS:
-#   - BasedPyright: Strict type checking
-#   - Ruff: Code formatting validation and linting
-#   - Pytest: Test suite with 80%+ coverage
-#
-# SECURITY SCANS (See security-analysis.yml):
-#   - Bandit: Python static security analysis
-#   - CodeQL: Advanced security analysis
-#   - Dependency Review: PR-based vulnerability detection
+# Thin caller for the org-level python-ci.yml reusable workflow, which runs
+# formatting, linting, type checking, and the test suite.
 
 name: CI
 
@@ -37,30 +26,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    uses: ./.github/workflows/reusable-python-test.yml
+  ci:
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-ci.yml@e067cdb7294f6221dbde74ef1f4c3ca735eed570 # main
     permissions:
       contents: read
       checks: write
       pull-requests: write
     with:
       python-version: '3.11'
-      coverage-source: gleif
-
-  quality-checks:
-    uses: ./.github/workflows/reusable-python-quality.yml
-    permissions:
-      contents: read
-    with:
-      python-version: '3.11'
-      source-dir: src
-      build-docs: true
+      source-directory: src
 
   ci-gate:
     name: CI Gate
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [test, quality-checks]
+    needs: [ci]
     if: always()
     steps:
       - name: Harden runner
@@ -70,12 +50,10 @@ jobs:
 
       - name: Validate CI Results
         run: |
-          if [[ "${{ needs.test.result }}" == "success" && \
-                "${{ needs.quality-checks.result }}" == "success" ]]; then
+          if [[ "${{ needs.ci.result }}" == "success" ]]; then
             echo "CI Pipeline - All Checks Passed"
           else
             echo "CI Pipeline Failed"
-            echo "test: ${{ needs.test.result }}"
-            echo "quality-checks: ${{ needs.quality-checks.result }}"
+            echo "ci: ${{ needs.ci.result }}"
             exit 1
           fi

@@ -1,12 +1,7 @@
 # GLEIF Golden Copy CLI - Security Analysis
 #
-# Centralized security scanning, separate from CI for performance (~5-8 min savings per PR).
-# CodeQL is handled by codeql.yml (advanced setup required by GitHub Code Security).
-#
-# SCANS:
-#   - Dependency Review: PR-based dependency vulnerability detection
-#   - Bandit: Python static security analysis
-#   - OSV Scanner: Vulnerability detection (matches OpenSSF Scorecard)
+# Thin caller for the org-level python-security-analysis.yml reusable workflow,
+# which centralises dependency review, Bandit, OSV, and related scans.
 
 name: Security Analysis
 
@@ -30,9 +25,11 @@ permissions:
 jobs:
   security:
     name: Security Analysis
-    uses: ./.github/workflows/reusable-security-analysis.yml
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@e067cdb7294f6221dbde74ef1f4c3ca735eed570 # main
     permissions:
       contents: read
       pull-requests: write
+      security-events: write
     with:
       python-version: '3.11'
+      source-directory: src
