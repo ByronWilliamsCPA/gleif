@@ -115,7 +115,6 @@ repos:
     rev: "37b77001d0174ebec2fcca2bd83ff83a6d45a3ab"  # v3.95.3  # pragma: allowlist secret
     hooks:
       - id: trufflehog
-        exclude: '^CHANGELOG\.md$'
         stages: [pre-commit]
 
 exclude: |
