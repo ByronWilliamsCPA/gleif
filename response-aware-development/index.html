@@ -739,17 +739,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#dynamic-model-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dynamic Model Selection
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -984,45 +973,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#future-enhancements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Enhancements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Future Enhancements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#phase-2-features-q2-2025" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 2 Features (Q2 2025)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#phase-3-features-q3-2025" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Phase 3 Features (Q3 2025)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#conclusion" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1074,14 +1024,16 @@
 <li><strong>Type Safety</strong>: Runtime type mismatches at boundaries</li>
 </ol>
 <h3 id="real-world-impact">Real-World Impact<a class="headerlink" href="#real-world-impact" title="Permanent link">&para;</a></h3>
-<div class="language-javascript highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// This code killed production at 3 AM:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nx">setUserData</span><span class="p">(</span><span class="nx">newData</span><span class="p">);</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nx">navigateToProfile</span><span class="p">(</span><span class="nx">userData</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span><span class="w">  </span><span class="c1">// Assumes state updated - WRONG!</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1">// This code survived production:</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nx">setUserData</span><span class="p">(</span><span class="nx">newData</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nx">navigateToProfile</span><span class="p">(</span><span class="nx">userData</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span><span class="w">  </span><span class="c1">// Waits for confirmation</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="p">});</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># This code killed production at 3 AM:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">conn</span> <span class="o">=</span> <span class="n">get_connection</span><span class="p">()</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">results</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM lei_records WHERE lei = ?&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">lei</span><span class="p">])</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Assumes connection is always valid and table is loaded - WRONG under cold start</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># This code survived production:</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="n">conn</span> <span class="o">=</span> <span class="n">get_connection</span><span class="p">()</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">if</span> <span class="n">conn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">table_exists</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="s2">&quot;lei_records&quot;</span><span class="p">):</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Database not initialized; run &#39;gleif load&#39; first&quot;</span><span class="p">)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="n">results</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM lei_records WHERE lei = ?&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">lei</span><span class="p">])</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
 </span></code></pre></div>
 <h2 id="solution-architecture">Solution Architecture<a class="headerlink" href="#solution-architecture" title="Permanent link">&para;</a></h2>
 <h3 id="core-innovation-context-isolation">Core Innovation: Context Isolation<a class="headerlink" href="#core-innovation-context-isolation" title="Permanent link">&para;</a></h3>
@@ -1094,8 +1046,8 @@
 <th>Tier</th>
 <th>Tag</th>
 <th>Risk Level</th>
-<th>Model Selection</th>
-<th>Cost</th>
+<th>Model</th>
+<th>Use case</th>
 </tr>
 </thead>
 <tbody>
@@ -1103,32 +1055,25 @@
 <td>1</td>
 <td>#CRITICAL</td>
 <td>Production outages, data loss</td>
-<td>Premium (Gemini 2.5 Pro, O3-mini)</td>
-<td>Paid</td>
+<td>Opus 4.7</td>
+<td>Multi-step decisions, deep reasoning</td>
 </tr>
 <tr>
 <td>2</td>
 <td>#ASSUME</td>
 <td>Functional bugs, UX issues</td>
-<td>Dynamic free selection (DeepSeek-R1, Qwen)</td>
-<td>Free</td>
+<td>Sonnet 4.6</td>
+<td>Standard verification, code review</td>
 </tr>
 <tr>
 <td>3</td>
 <td>#EDGE</td>
 <td>Rare scenarios, optimizations</td>
-<td>Fast free (Flash-lite)</td>
-<td>Free</td>
+<td>Haiku 4.5</td>
+<td>Quick lookups, structural checks</td>
 </tr>
 </tbody>
 </table>
-<h3 id="dynamic-model-selection">Dynamic Model Selection<a class="headerlink" href="#dynamic-model-selection" title="Permanent link">&para;</a></h3>
-<p>Uses PAL MCP Server's intelligent routing to:</p>
-<ul>
-<li>Select the best free model for each assumption type</li>
-<li>Learn from patterns over time</li>
-<li>Reduce cost by reserving premium models for critical assumptions only</li>
-</ul>
 <h2 id="implementation-strategy">Implementation Strategy<a class="headerlink" href="#implementation-strategy" title="Permanent link">&para;</a></h2>
 <h3 id="phase-1-tagging-current">Phase 1: Tagging (Current)<a class="headerlink" href="#phase-1-tagging-current" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1254,17 +1199,15 @@
 <h2 id="implementation-checklist">Implementation Checklist<a class="headerlink" href="#implementation-checklist" title="Permanent link">&para;</a></h2>
 <h3 id="setup-requirements">Setup Requirements<a class="headerlink" href="#setup-requirements" title="Permanent link">&para;</a></h3>
 <ul>
-<li>[ ] PAL MCP Server configured and accessible</li>
-<li>[ ] User-level CLAUDE.md updated with RAD standards</li>
-<li>[ ] Slash command added to user configuration</li>
+<li>[ ] <code>CLAUDE.md</code> updated with RAD tagging standards (see global <code>~/.claude/CLAUDE.md</code>)</li>
+<li>[ ] Team members familiar with <code>#CRITICAL</code>, <code>#ASSUME</code>, <code>#EDGE</code> tag semantics</li>
 <li>[ ] Pre-commit hooks configured (optional)</li>
 </ul>
 <h3 id="verification-points">Verification Points<a class="headerlink" href="#verification-points" title="Permanent link">&para;</a></h3>
 <ul>
 <li>[ ] Test with synthetic assumption examples</li>
-<li>[ ] Verify model routing works correctly</li>
-<li>[ ] Confirm cost tracking functioning</li>
-<li>[ ] Validate parallel execution</li>
+<li>[ ] Verify tags are caught during code review</li>
+<li>[ ] Confirm <code>#VERIFY</code> instructions are actionable</li>
 </ul>
 <h3 id="monitoring-setup">Monitoring Setup<a class="headerlink" href="#monitoring-setup" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1275,41 +1218,23 @@
 </ul>
 <h2 id="example-workflow">Example Workflow<a class="headerlink" href="#example-workflow" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 1. Developer codes with Claude</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$<span class="w"> </span>claude<span class="w"> </span><span class="s2">&quot;implement user profile update&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Claude generates code with tagged assumptions</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$<span class="w"> </span>claude<span class="w"> </span><span class="s2">&quot;implement lei lookup with parent traversal&quot;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># Claude generates code with #CRITICAL/#ASSUME/#EDGE tags and #VERIFY instructions</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># 2. Before commit, verify assumptions</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>$<span class="w"> </span>/rad/verify<span class="w"> </span>--strategy<span class="w"> </span>tiered
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># System routes assumptions to appropriate models</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># 2. Before commit, review tagged assumptions</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>$<span class="w"> </span>grep<span class="w"> </span>-rn<span class="w"> </span><span class="s1">&#39;#CRITICAL\|#ASSUME\|#EDGE&#39;</span><span class="w"> </span>src/
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Work through each #VERIFY instruction manually or via PR review</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># 3. Review and apply fixes</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>$<span class="w"> </span>git<span class="w"> </span>diff<span class="w">  </span><span class="c1"># Review proposed fixes</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>$<span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>-p<span class="w">  </span><span class="c1"># Selectively apply fixes</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># 4. Commit with confidence</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>$<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: user profile update with verified assumptions&quot;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># 3. Commit with assumptions documented</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>$<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: lei parent traversal with RAD assumption tags&quot;</span>
 </span></code></pre></div>
-<h2 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h2>
-<h3 id="phase-2-features-q2-2025">Phase 2 Features (Q2 2025)<a class="headerlink" href="#phase-2-features-q2-2025" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Machine learning for assumption risk scoring</li>
-<li>Production feedback loop integration</li>
-<li>Cross-project pattern sharing</li>
-</ul>
-<h3 id="phase-3-features-q3-2025">Phase 3 Features (Q3 2025)<a class="headerlink" href="#phase-3-features-q3-2025" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Proactive assumption prevention in Claude</li>
-<li>Industry-specific assumption libraries</li>
-<li>Compliance-oriented verification modes</li>
-</ul>
 <h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
 <p>Response-Aware Development represents a shift from "hope it works in production" to "verify assumptions systematically". By running multiple AI models with fresh contexts, we can catch subtle issues that single-context development misses.</p>
 <p>The tiered approach balances quality and cost: premium models handle critical assumptions while free models cover the bulk of verification work.</p>
 <p>Success will be measured by reduced production incidents, improved code quality, and developer confidence in AI-generated code.</p>
 <hr />
-<p><em>Document Version: 1.0</em>
-<em>Last Updated: 2025-01-31</em>
-<em>Next Review: 30 days after implementation</em></p>
+<p><em>Document Version: 1.1</em>
+<em>Last Updated: 2026-05-14</em></p>
 
 
 
