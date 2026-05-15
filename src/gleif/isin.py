@@ -15,10 +15,13 @@ already-known LEIs (the CLI surfaces them behind the ``--isin``
 flag). They are not designed for bulk ETL: each LEI requires a
 separate HTTP request, and GLEIF rate-limits the public API.
 
-Error handling: every HTTP failure (network, 4xx, 5xx, malformed
-JSON wrapped as HTTP error) is swallowed and yields an empty result
-for the affected LEI. This is deliberate - one LEI without ISINs
-should not abort an entire enrichment pass.
+Error handling: every ``httpx.HTTPError`` (network, 4xx, 5xx) is
+swallowed and yields an empty result for the affected LEI. This is
+deliberate - one LEI without ISINs should not abort an entire
+enrichment pass. Note that JSON decoding errors are not caught:
+GLEIF's REST API has always returned valid JSON on 2xx responses,
+so a ``json.JSONDecodeError`` here would indicate an API contract
+change rather than expected operating conditions.
 """
 
 from __future__ import annotations

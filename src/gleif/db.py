@@ -10,13 +10,19 @@ mappings from :mod:`gleif.constants`.
 
 Schema overview
 ---------------
+The data tables are created via ``CREATE OR REPLACE TABLE ... AS
+SELECT ... FROM read_csv(...)`` and so do **not** carry SQL primary
+key constraints. The columns below are the logical keys used by
+the query layer; ``load_metadata`` is created with a real
+``PRIMARY KEY`` constraint via ``CREATE TABLE IF NOT EXISTS``.
+
 ======================  =================================================
-Table                   Key
+Table                   Logical key
 ======================  =================================================
 ``lei_records``         ``lei``
 ``relationships``       ``(start_node_id, end_node_id, relationship_type)``
 ``reporting_exceptions``  ``(lei, exception_category)``
-``load_metadata``       ``dataset_type``
+``load_metadata``       ``dataset_type`` (enforced)
 ======================  =================================================
 
 For relationships, ``start_node_id`` is the child LEI and

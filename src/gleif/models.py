@@ -3,12 +3,19 @@
 This module defines frozen dataclasses returned by the query helpers
 in :mod:`gleif.queries`. Each dataclass mirrors a subset of the GLEIF
 golden copy schema fields that are loaded into the local DuckDB
-database; fields that are absent from a particular CSV row are
-exposed as ``None`` rather than empty strings, so callers can
-distinguish "missing" from "deliberately blank".
+database. The conversion rules used by the query layer are:
 
-All models are ``frozen=True`` so they are safe to use as dict keys,
-in sets, and across thread boundaries.
+* Fields typed ``str | None`` (most address / metadata fields) are
+  set to ``None`` when the underlying CSV cell is empty.
+* Fields typed plain ``str`` (e.g. ``EntityInfo.legal_name``,
+  ``EntityInfo.entity_status``, ``RelatedEntity.relationship_status``)
+  default to an empty string when the underlying cell is empty.
+
+All models are declared with ``frozen=True``, which prevents
+attribute rebinding. Note that ``frozen=True`` does **not** make
+contained lists (e.g. ``CorporateGroup.descendants``,
+``LEIRelationshipReport.children``) immutable, so callers must not
+rely on these models being deeply immutable or hashable.
 """
 
 from __future__ import annotations
@@ -26,8 +33,10 @@ class EntityInfo:
     actually loaded into the database.
 
     Data quality note: GLEIF Level 1 data is self-reported and not
-    every field is mandatory. Optional fields are exposed as ``None``
-    when the underlying CSV cell was empty.
+    every field is mandatory. The ``str | None`` fields below are
+    exposed as ``None`` when the source CSV cell is empty; the
+    plain ``str`` fields (``legal_name``, ``entity_status``,
+    ``registration_status``) default to an empty string instead.
 
     Attributes:
         lei: 20-character Legal Entity Identifier (uppercase
@@ -35,9 +44,10 @@ class EntityInfo:
         legal_name: Registered legal name. Empty string if blank in
             the source CSV.
         entity_status: Lifecycle status of the entity, e.g. ``ACTIVE``
-            or ``INACTIVE``.
+            or ``INACTIVE``. Empty string if blank.
         registration_status: Status of the LEI registration itself,
-            e.g. ``ISSUED``, ``LAPSED``, ``RETIRED``.
+            e.g. ``ISSUED``, ``LAPSED``, ``RETIRED``. Empty string
+            if blank.
         entity_category: GLEIF entity category, e.g. ``GENERAL``,
             ``BRANCH``, ``FUND``.
         legal_jurisdiction: ISO 3166-2 jurisdiction code of the entity.
@@ -81,6 +91,7 @@ class RelatedEntity:
             ``IS_INTERNATIONAL_BRANCH_OF``.
         relationship_status: Status of the relationship record, e.g.
             ``ACTIVE`` (query helpers only return ``ACTIVE`` rows).
+            Empty string if blank in the source CSV.
         direction: Direction relative to the queried LEI - one of
             ``"parent"``, ``"child"``, ``"sibling"``, or ``"other"``.
     """

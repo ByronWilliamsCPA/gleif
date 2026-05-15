@@ -154,9 +154,10 @@ async def download_dataset(
     Propagates ``httpx.HTTPStatusError`` for non-2xx HTTP responses
     (e.g. 404 if the dataset URL changes, 503 if GLEIF is
     rate-limiting), ``httpx.RequestError`` for network-level
-    failures (DNS, connection timeout, read timeout), and
-    ``ValueError`` from :func:`_extract_zip` if the downloaded
-    archive is malformed.
+    failures (DNS, connection timeout, read timeout),
+    ``zipfile.BadZipFile`` if the downloaded archive is not a valid
+    ZIP, and ``ValueError`` from :func:`_extract_zip` if the
+    archive structure is unexpected.
 
     Args:
         dataset_type: Which dataset to download.
@@ -241,7 +242,9 @@ def _extract_zip(zip_path: Path, extract_dir: Path) -> Path:
 
     GLEIF archives always contain exactly one CSV. This helper also
     guards against zip-slip path traversal by checking that the
-    resolved destination stays inside ``extract_dir``.
+    resolved destination stays inside ``extract_dir``. If the file
+    is not a valid ZIP, ``zipfile.BadZipFile`` propagates unchanged
+    from the standard library.
 
     Args:
         zip_path: Path to the ZIP file.
@@ -282,8 +285,9 @@ async def download_all(
 
     Any error raised by :func:`download_dataset` propagates from
     ``asyncio.gather``: ``httpx.HTTPStatusError`` for non-2xx HTTP
-    responses, ``httpx.RequestError`` for network failures, or
-    ``ValueError`` for a malformed archive. ``asyncio.gather``
+    responses, ``httpx.RequestError`` for network failures,
+    ``zipfile.BadZipFile`` for a corrupt archive, or ``ValueError``
+    for an unexpected archive structure. ``asyncio.gather``
     re-raises the first error and cancels the remaining tasks.
 
     Args:
