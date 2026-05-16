@@ -36,4 +36,10 @@ jobs:
       python-version: '3.11'
       source-directory: src
       no-build: false
+      # CodeQL is handled by the dedicated codeql.yml workflow.
+      # OSV + safety are redundant with pip-audit invoked from python-ci.yml,
+      # which honors [tool.pip-audit] ignore-vuln for accepted vulns
+      # documented in docs/known-vulnerabilities.md.
       run-codeql: false
+      run-safety: false
+      run-osv: false
