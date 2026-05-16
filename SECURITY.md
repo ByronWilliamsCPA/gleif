@@ -12,7 +12,7 @@ Please do not open a public GitHub issue for security vulnerabilities.
 
 **Preferred channel:** [GitHub private vulnerability reporting](https://github.com/ByronWilliamsCPA/gleif/security/advisories/new).
 
-**Email contact:** `byronawilliams@gmail.com` — use this if GitHub
+**Email contact:** `byronawilliams@gmail.com`. Use this if GitHub
 private vulnerability reporting is unavailable, or if you prefer email.
 Encrypt sensitive details with the maintainer's GPG key on request.
 
