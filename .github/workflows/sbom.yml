@@ -40,6 +40,7 @@ jobs:
     name: SBOM & Security
     uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@a4fb54a1bec59ddd5f2a498caaa942c542a0631d  # main
     permissions:
+      contents: read
       security-events: write
     with:
       python-version: '3.12'
