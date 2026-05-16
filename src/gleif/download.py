@@ -1,4 +1,30 @@
-"""Download and extract GLEIF golden copy datasets."""
+"""Asynchronous downloader for GLEIF golden copy datasets.
+
+GLEIF publishes the three Level 1 and Level 2 golden copy datasets as
+ZIP archives at:
+
+    https://goldencopy.gleif.org/api/v2/golden-copies/publishes/<type>/latest.csv
+
+where ``<type>`` is one of ``lei2``, ``rr``, or ``repex`` (see
+:class:`gleif.constants.DatasetType`). Each ZIP contains a single
+CSV file whose filename encodes the publish date.
+
+This module performs an HTTP HEAD request to read the
+``x-gleif-publish-date`` header, compares it against a marker file
+in the local data directory, and skips the download when the local
+copy is current. When the local copy is stale (or ``force=True``)
+the archive is streamed to disk, the embedded CSV is extracted, and
+the freshness marker is updated.
+
+Public surface:
+    * :class:`DownloadResult` - returned for each downloaded dataset.
+    * :func:`download_dataset` - download a single dataset.
+    * :func:`download_all` - download all three datasets concurrently.
+    * :func:`find_extracted_csv` - look up the latest extracted CSV
+      for a dataset type.
+    * :func:`read_local_publish_date` - read the cached publish-date
+      marker.
+"""
 
 from __future__ import annotations
 
@@ -24,7 +50,21 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class DownloadResult:
-    """Result of downloading and extracting a single dataset."""
+    """Result of downloading and extracting a single dataset.
+
+    Returned by :func:`download_dataset` and (in a list) by
+    :func:`download_all`. Also accepted as input by
+    :func:`gleif.db.load_all`.
+
+    Attributes:
+        csv_path: Filesystem path to the extracted CSV.
+        publish_date: Value of the GLEIF ``x-gleif-publish-date``
+            header for the downloaded archive (e.g. ``"2024-06-15"``)
+            or ``"unknown"`` if the header was missing.
+        dataset_type: Which dataset this result corresponds to.
+        record_label: Human-readable label, e.g.
+            ``"Level 1 - LEI Records"``.
+    """
 
     csv_path: Path
     publish_date: str
@@ -33,10 +73,27 @@ class DownloadResult:
 
 
 def _publish_date_marker(data_dir: Path, dataset_type: DatasetType) -> Path:
+    """Return the path of the freshness marker file for a dataset."""
     return data_dir / f"{dataset_type.value}_publish_date.txt"
 
 
 def read_local_publish_date(data_dir: Path, dataset_type: DatasetType) -> str | None:
+    """Read the cached publish date for a previously downloaded dataset.
+
+    The marker is written by :func:`download_dataset` after each
+    successful download and is used both for freshness checking
+    on subsequent runs and by the ``gleif load`` command (which
+    needs the publish date but does not re-contact GLEIF).
+
+    Args:
+        data_dir: Directory where downloaded data is stored.
+        dataset_type: Which dataset's marker to read.
+
+    Returns:
+        The publish date string, or ``None`` if no marker exists
+        for this dataset (i.e. the dataset has never been
+        downloaded into ``data_dir``).
+    """
     marker = _publish_date_marker(data_dir, dataset_type)
     if marker.exists():
         return marker.read_text().strip()
@@ -46,12 +103,27 @@ def read_local_publish_date(data_dir: Path, dataset_type: DatasetType) -> str | 
 def _write_local_publish_date(
     data_dir: Path, dataset_type: DatasetType, publish_date: str
 ) -> None:
+    """Persist the publish date for a freshly downloaded dataset."""
     marker = _publish_date_marker(data_dir, dataset_type)
     marker.write_text(publish_date)
 
 
 def find_extracted_csv(data_dir: Path, dataset_type: DatasetType) -> Path | None:
-    """Find an already-extracted CSV for this dataset type."""
+    """Find the most recent extracted CSV for a dataset type.
+
+    GLEIF CSV filenames follow the pattern
+    ``<YYYYMMDD-HHMM>-gleif-goldencopy-<type>-<full|delta>.csv``;
+    this function returns the lexicographically last match, which
+    corresponds to the most recent publish.
+
+    Args:
+        data_dir: Directory containing extracted CSVs.
+        dataset_type: Which dataset to look up.
+
+    Returns:
+        Path to the most recent CSV, or ``None`` if none is present
+        in ``data_dir``.
+    """
     pattern = f"*-gleif-goldencopy-{dataset_type.value}-*"
     csvs = sorted(data_dir.glob(pattern))
     if csvs:
@@ -68,14 +140,38 @@ async def download_dataset(
 ) -> DownloadResult:
     """Download and extract a single GLEIF golden copy dataset.
 
+    Issues a HEAD request to the dataset URL (see
+    :data:`gleif.constants.DATASET_URLS`) to read the
+    ``x-gleif-publish-date`` header and ``content-length``. If the
+    local data directory already contains a CSV from the same
+    publish date and ``force`` is ``False``, the existing file is
+    returned unchanged. Otherwise the ZIP is streamed in 64 KiB
+    chunks via an ``httpx.AsyncClient`` (10-minute timeout),
+    extracted into ``data_dir``, and the freshness marker is
+    updated. The ZIP file is removed after extraction to save disk
+    space.
+
+    Propagates ``httpx.HTTPStatusError`` for non-2xx HTTP responses
+    (e.g. 404 if the dataset URL changes, 503 if GLEIF is
+    rate-limiting), ``httpx.RequestError`` for network-level
+    failures (DNS, connection timeout, read timeout),
+    ``zipfile.BadZipFile`` if the downloaded archive is not a valid
+    ZIP, and ``ValueError`` from :func:`_extract_zip` if the
+    archive structure is unexpected.
+
     Args:
         dataset_type: Which dataset to download.
-        data_dir: Directory to store downloaded and extracted files.
-        force: Re-download even if local copy is current.
-        progress: Optional Rich progress bar instance.
+        data_dir: Directory to store the downloaded ZIP and the
+            extracted CSV. Created if it does not exist.
+        force: If ``True``, re-download even when the local CSV is
+            already current.
+        progress: Optional Rich ``Progress`` instance for visual
+            progress reporting. When supplied, a task is added per
+            dataset and updated as bytes arrive.
 
     Returns:
-        DownloadResult with path to the extracted CSV.
+        DownloadResult with the path to the extracted CSV and the
+        remote publish date.
     """
     data_dir.mkdir(parents=True, exist_ok=True)
     url = DATASET_URLS[dataset_type]
@@ -144,6 +240,12 @@ async def download_dataset(
 def _extract_zip(zip_path: Path, extract_dir: Path) -> Path:
     """Extract the single CSV from a GLEIF ZIP archive.
 
+    GLEIF archives always contain exactly one CSV. This helper also
+    guards against zip-slip path traversal by checking that the
+    resolved destination stays inside ``extract_dir``. If the file
+    is not a valid ZIP, ``zipfile.BadZipFile`` propagates unchanged
+    from the standard library.
+
     Args:
         zip_path: Path to the ZIP file.
         extract_dir: Directory to extract into.
@@ -152,7 +254,8 @@ def _extract_zip(zip_path: Path, extract_dir: Path) -> Path:
         Path to the extracted CSV file.
 
     Raises:
-        ValueError: If the ZIP doesn't contain exactly one CSV.
+        ValueError: If no CSV is present in the archive, or if the
+            archive contains a path-traversal attempt.
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         csv_names = [n for n in zf.namelist() if n.endswith(".csv")]
@@ -173,14 +276,29 @@ async def download_all(
     *,
     force: bool = False,
 ) -> list[DownloadResult]:
-    """Download all three GLEIF golden copy datasets.
+    """Download all three GLEIF golden copy datasets concurrently.
+
+    Schedules one :func:`download_dataset` coroutine per entry in
+    :class:`gleif.constants.DatasetType` and awaits them with
+    ``asyncio.gather``. Progress is reported via a shared Rich
+    ``Progress`` instance.
+
+    Any error raised by :func:`download_dataset` propagates from
+    ``asyncio.gather``: ``httpx.HTTPStatusError`` for non-2xx HTTP
+    responses, ``httpx.RequestError`` for network failures,
+    ``zipfile.BadZipFile`` for a corrupt archive, or ``ValueError``
+    for an unexpected archive structure. ``asyncio.gather``
+    re-raises the first error and cancels the remaining tasks.
 
     Args:
-        data_dir: Directory to store downloaded files.
-        force: Re-download even if local copies are current.
+        data_dir: Directory to store downloaded ZIPs and extracted
+            CSVs. Created if it does not exist.
+        force: If ``True``, re-download every dataset even when the
+            local copy is already current.
 
     Returns:
-        List of DownloadResult for each dataset.
+        A list of :class:`DownloadResult`, one per dataset, in the
+        order defined by :class:`gleif.constants.DatasetType`.
     """
     progress = Progress(
         TextColumn("[bold blue]{task.description}"),
