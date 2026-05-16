@@ -96,6 +96,14 @@ addopts = "-v --cov=gleif --cov-report=term-missing"
 exclude_dirs = ["tests"]
 skips = ["B608"]  # read_csv() paths and column constants are app-controlled, not user input
 
+[tool.pip-audit]
+ignore-vuln = [
+    # PYSEC-2022-42969: regex DoS in `py.path` (svnwc), pulled in transitively
+    # by interrogate. We do not exercise the affected svn code path. See
+    # docs/known-vulnerabilities.md for review cadence.
+    "PYSEC-2022-42969",
+]
+
 [tool.coverage.run]
 branch = true
 

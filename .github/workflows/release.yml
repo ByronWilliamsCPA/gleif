@@ -1,12 +1,8 @@
 # GLEIF Golden Copy CLI - Release Pipeline
 #
-# Triggered on semver version tags (e.g. v1.2.3).
-#
-# STEPS:
-#   1. Build wheel + sdist with uv
-#   2. Sign both artifacts with Sigstore (keyless, OIDC-backed)
-#   3. Generate SPDX SBOM for the source tree
-#   4. Create GitHub release and attach all artifacts
+# Thin caller for the org-level python-release.yml reusable workflow, which
+# builds and signs the distribution, generates the SBOM, and publishes the
+# GitHub release.
 
 name: Release
 
@@ -20,10 +16,16 @@ permissions:
 
 jobs:
   release:
-    uses: ./.github/workflows/reusable-python-release.yml
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-release.yml@4e0fd54428d6745b04e2316f85d585109d7db02b # main
     permissions:
       contents: write
       id-token: write
+      attestations: write
+      issues: write
+      pull-requests: write
     with:
       python-version: '3.11'
-      sbom-artifact-name: gleif-sbom.spdx.json
+      source-directory: src
+      no-build: false
+      semantic-release: false
+      publish-to-pypi: false

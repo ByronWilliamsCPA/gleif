@@ -7,6 +7,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Changed
+
+- CI workflows (`ci.yml`, `release.yml`, `scorecard.yml`, `security-analysis.yml`)
+  migrated from local reusable workflows to org-level reusables in
+  `ByronWilliamsCPA/.github`, pinned to SHA
+  `4e0fd54428d6745b04e2316f85d585109d7db02b` (closes #28). Local
+  `reusable-codeql.yml` is retained because the org repo does not publish a
+  `python-codeql.yml` equivalent.
+- Release SBOM format changes from SPDX-JSON (`gleif-sbom.spdx.json`,
+  produced by `anchore/sbom-action`) to CycloneDX-JSON (`dist/sbom.json`,
+  produced by `cyclonedx-py` inside the org `python-release.yml`).
+  Downstream consumers expecting SPDX should switch to CycloneDX or
+  generate SPDX out of band.
+
 ### Added
 
 - Release workflow (`release.yml`): Sigstore keyless signing and SPDX SBOM
