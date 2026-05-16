@@ -10,8 +10,20 @@
 
 Please do not open a public GitHub issue for security vulnerabilities.
 
-Use [GitHub private vulnerability reporting](https://github.com/ByronWilliamsCPA/gleif/security/advisories/new)
-to submit a report. You will receive a response within 72 hours acknowledging receipt.
+**Preferred channel:** [GitHub private vulnerability reporting](https://github.com/ByronWilliamsCPA/gleif/security/advisories/new).
+
+**Email contact:** `byronawilliams@gmail.com`. Use this if GitHub
+private vulnerability reporting is unavailable, or if you prefer email.
+Encrypt sensitive details with the maintainer's GPG key on request.
+
+Include in your report:
+
+- A description of the vulnerability and its impact
+- Steps to reproduce (proof-of-concept code is welcome)
+- The affected version(s) and configuration
+- Any suggested mitigation, if known
+
+You will receive a response within 72 hours acknowledging receipt.
 Initial triage and severity assessment will be completed within 14 days of acknowledgment.
 
 If the vulnerability is confirmed, a fix will be prioritized based on severity:

@@ -17,7 +17,8 @@ reviews:
       - master
       - develop
 
-  request_changes_workflow: true
+  # false (CodeRabbit default): inline comments are advisory, no CHANGES_REQUESTED merge gate
+  request_changes_workflow: false
   high_level_summary: true
   high_level_summary_placeholder: "@coderabbitai summary"
 
