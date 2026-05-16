@@ -26,7 +26,7 @@ permissions:
 jobs:
   security:
     name: Security Analysis
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@4e0fd54428d6745b04e2316f85d585109d7db02b # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@e7781b38647e3ea2550758ea4d6666bf31026660 # main
     permissions:
       contents: read
       pull-requests: write
