@@ -20,7 +20,12 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      attestations: write
+      issues: write
+      pull-requests: write
     with:
       python-version: '3.11'
       source-directory: src
       no-build: false
+      semantic-release: false
+      publish-to-pypi: false

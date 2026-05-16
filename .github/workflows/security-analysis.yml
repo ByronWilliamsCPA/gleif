@@ -1,7 +1,8 @@
 # GLEIF Golden Copy CLI - Security Analysis
 #
 # Thin caller for the org-level python-security-analysis.yml reusable workflow,
-# which centralises dependency review, Bandit, OSV, and related scans.
+# which centralizes dependency review, Bandit, OSV, and related scans. CodeQL
+# is disabled here because the dedicated codeql.yml workflow already runs it.
 
 name: Security Analysis
 
@@ -30,7 +31,9 @@ jobs:
       contents: read
       pull-requests: write
       security-events: write
+      actions: read
     with:
       python-version: '3.11'
       source-directory: src
       no-build: false
+      run-codeql: false

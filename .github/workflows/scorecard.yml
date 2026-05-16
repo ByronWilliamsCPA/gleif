@@ -19,7 +19,6 @@ jobs:
     uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@4e0fd54428d6745b04e2316f85d585109d7db02b # main
     permissions:
       security-events: write
-      id-token: write
       contents: read
       actions: read
     secrets:
