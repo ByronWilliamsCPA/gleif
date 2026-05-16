@@ -12,7 +12,7 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://byronwilliamscpa.github.io/gleif/known-vulnerabilities/">
+        <link rel="canonical" href="https://byronwilliamscpa.github.io/gleif/known-vulnerabilities-template/">
       
       
       
@@ -25,7 +25,7 @@
     
     
       
-        <title>Known Vulnerabilities - GLEIF CLI</title>
+        <title>Known Vulnerabilities Template - GLEIF CLI</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#known-vulnerabilities" class="md-skip">
+        <a href="#known-vulnerabilities-template" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Known Vulnerabilities
+              Known Vulnerabilities Template
             
           </span>
         </div>
@@ -640,6 +640,47 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#required-columns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required columns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#row-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Row template
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy-reminders" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy reminders
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -658,31 +699,63 @@
   
 
 
-<h1 id="known-vulnerabilities">Known Vulnerabilities<a class="headerlink" href="#known-vulnerabilities" title="Permanent link">&para;</a></h1>
+<h1 id="known-vulnerabilities-template">Known Vulnerabilities Template<a class="headerlink" href="#known-vulnerabilities-template" title="Permanent link">&para;</a></h1>
+<p>Use this template when adding a new entry to
+<a href="../known-vulnerabilities/">known-vulnerabilities.md</a>. One row per accepted
+vulnerability. Keep the file's table headers exactly as shown so the
+documented and committed tables stay aligned.</p>
+<h2 id="required-columns">Required columns<a class="headerlink" href="#required-columns" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Package</th>
-<th>Added</th>
-<th>Reason</th>
-<th>Next review</th>
+<th>Column</th>
+<th>What to write</th>
+<th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>PYSEC-2022-42969</td>
-<td>py 1.11.0</td>
-<td>2026-05-15</td>
-<td>Transitive via <code>interrogate</code> (dev-only). Vulnerability is a regex DoS in <code>py.path.svnwc</code> (Subversion working-copy helper); the project does not invoke any <code>py.path.svnwc</code> code paths. The <code>py</code> package is unmaintained; remove this entry once <code>interrogate</code> drops its dependency on <code>py</code>.</td>
-<td>2026-07-14</td>
+<td>ID</td>
+<td>Authoritative advisory ID (PYSEC, GHSA, CVE)</td>
+<td><code>PYSEC-2022-42969</code></td>
+</tr>
+<tr>
+<td>Package</td>
+<td>Vulnerable package and pinned version</td>
+<td><code>py 1.11.0</code></td>
+</tr>
+<tr>
+<td>Added</td>
+<td>UTC date the entry was added, <code>YYYY-MM-DD</code></td>
+<td><code>2026-05-15</code></td>
+</tr>
+<tr>
+<td>Reason</td>
+<td>Why this is accepted: transitive scope, affected code path, runtime vs dev-only, removal condition</td>
+<td>Transitive via <code>interrogate</code> (dev-only); affected <code>py.path.svnwc</code> not invoked; remove when <code>interrogate</code> drops <code>py</code>.</td>
+</tr>
+<tr>
+<td>Next review</td>
+<td>UTC date for the next reassessment, <code>YYYY-MM-DD</code>, no more than 60 days after <code>Added</code></td>
+<td><code>2026-07-14</code></td>
 </tr>
 </tbody>
 </table>
-<p>Review quarterly. No entry should age past 60 days without reassessment.
-By policy, vulnerabilities older than 60 days block releases; review this file
-before tagging any release.</p>
-<p>Last reviewed: 2026-05-15</p>
+<h2 id="row-template">Row template<a class="headerlink" href="#row-template" title="Permanent link">&para;</a></h2>
+<div class="language-markdown highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>| &lt;ADVISORY-ID&gt; | &lt;package&gt; &lt;version&gt; | YYYY-MM-DD | &lt;one-sentence rationale that covers: transitive vs direct, runtime vs dev-only, why the affected code path is unreachable, and the condition under which this entry should be removed&gt; | YYYY-MM-DD |
+</span></code></pre></div>
+<h2 id="policy-reminders">Policy reminders<a class="headerlink" href="#policy-reminders" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The OpenSSF release gate blocks releases for any vulnerability older than
+  60 days regardless of reassessment status. Set <code>Next review</code> strictly less
+  than 60 days after <code>Added</code>.</li>
+<li>Every entry must be paired with a <code>[tool.pip-audit] ignore-vuln</code> line in
+  <code>pyproject.toml</code> carrying the same ID. Never suppress <code>pip-audit</code> output
+  without a documented entry here.</li>
+<li>Update the file's "Last reviewed" footer date whenever you edit any row.</li>
+<li>If a vulnerability becomes fixable (e.g., upstream releases a patched
+  version), remove the row instead of updating the review date.</li>
+</ul>
 
 
 
