@@ -34,12 +34,14 @@ concurrency:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   sbom:
     name: SBOM & Security
     uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@4207d9705c218de5be2664a277b3455b0b0adffc  # main
+    permissions:
+      contents: read
+      security-events: write
     with:
       python-version: '3.12'
       fail-on-vulnerabilities: true
