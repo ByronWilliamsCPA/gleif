@@ -48,3 +48,7 @@ jobs:
       severity-threshold: 'CRITICAL,HIGH'
       artifact-retention-days: 90
       fail-on-forbidden-licenses: false
+      # gleif is an editable source install with no binary distribution, so uv
+      # sync must be allowed to build from source. The reusable workflow's
+      # no-build default flipped to true at SHA e7781b3 (upstream PR #103).
+      no-build: false
