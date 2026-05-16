@@ -20,9 +20,6 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  security-events: write
-  packages: read
-  actions: read
   contents: read
 
 jobs:
