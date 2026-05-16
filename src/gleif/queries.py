@@ -522,7 +522,7 @@ def get_corporate_group(
         >>> con = get_connection(DEFAULT_DB_PATH)  # doctest: +SKIP
         >>> group = get_corporate_group(con, "2138005YL12BKW2FQA89")  # doctest: +SKIP
         >>> group.root.legal_name  # doctest: +SKIP
-        'APPLE INC.'
+        'Apple Inc.'
         >>> len(group.descendants)  # doctest: +SKIP
         42
     """
@@ -621,7 +621,7 @@ def get_full_report(
         >>> con = get_connection(DEFAULT_DB_PATH)  # doctest: +SKIP
         >>> report = get_full_report(con, "2138005YL12BKW2FQA89")  # doctest: +SKIP
         >>> report.entity.legal_name  # doctest: +SKIP
-        'APPLE INC.'
+        'Apple Inc.'
         >>> report.direct_parent is None  # doctest: +SKIP
         False
         >>> [c.legal_name for c in report.children][:2]  # doctest: +SKIP
