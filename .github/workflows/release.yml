@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   release:
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-release.yml@e7781b38647e3ea2550758ea4d6666bf31026660 # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-release.yml@1b2d33c47cc11a96b9757b49f41873c54e75f57c # main
     permissions:
       contents: write
       id-token: write
