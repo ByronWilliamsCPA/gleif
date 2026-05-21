@@ -3,7 +3,8 @@
 This module defines the ``gleif`` console script entry point exposed
 in ``pyproject.toml`` (``[project.scripts]``). The CLI wraps the
 library functions in :mod:`gleif.download`, :mod:`gleif.db`, and
-:mod:`gleif.queries` with Rich-rendered output.
+:mod:`gleif.queries` with Rich-rendered output. The render helpers
+themselves live in :mod:`gleif.rendering`.
 
 Subcommands
 -----------
@@ -24,13 +25,10 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 import typer
-from rich.console import Console
-from rich.panel import Panel
 from rich.table import Table
-from rich.tree import Tree
 
 from gleif.constants import (
     DATASET_LABELS,
@@ -43,25 +41,18 @@ from gleif.db import get_connection, get_status, load_all
 from gleif.download import download_all
 from gleif.isin import fetch_isins_batch
 from gleif.queries import get_corporate_group, get_full_report, search_by_name
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-    from gleif.models import (
-        CorporateGroup,
-        EntityInfo,
-        HierarchyNode,
-        LEIRelationshipReport,
-        RelatedEntity,
-        ReportingException,
-    )
+from gleif.rendering import (
+    collect_report_leis,
+    console,
+    render_report,
+    render_tree,
+)
 
 app = typer.Typer(
     name="gleif",
     help="GLEIF Golden Copy data loader and LEI relationship query CLI.",
     no_args_is_help=True,
 )
-console = Console()
 _FETCHING_ISINS_MSG = "[dim]Fetching ISINs from GLEIF API...[/]"
 
 DataDirOption = Annotated[
@@ -220,7 +211,7 @@ def lei(
             console.print(_FETCHING_ISINS_MSG)
             isin_map = fetch_isins_batch(all_leis)
 
-        _render_tree(group, isin_map=isin_map)
+        render_tree(group, isin_map=isin_map)
         return
 
     if report is None:
@@ -229,11 +220,11 @@ def lei(
 
     isin_map_flat: dict[str, list[str]] = {}
     if isin:
-        all_leis = _collect_report_leis(report)
+        all_leis = collect_report_leis(report)
         console.print(_FETCHING_ISINS_MSG)
         isin_map_flat = fetch_isins_batch(all_leis)
 
-    _render_report(report, isin_map=isin_map_flat)
+    render_report(report, isin_map=isin_map_flat)
 
 
 @app.command()
@@ -333,236 +324,3 @@ def status(
         )
 
     console.print(table)
-
-
-# ---------------------------------------------------------------------------
-# Output rendering
-# ---------------------------------------------------------------------------
-
-
-def _collect_report_leis(report: LEIRelationshipReport) -> list[str]:
-    """Collect all unique LEIs referenced in a report."""
-    leis = [report.entity.lei]
-    if report.direct_parent:
-        leis.append(report.direct_parent.lei)
-    if report.ultimate_parent:
-        leis.append(report.ultimate_parent.lei)
-    leis.extend(child.lei for child in report.children)
-    leis.extend(sibling.lei for sibling in report.siblings)
-    leis.extend(other.lei for other in report.other_relationships)
-    # Deduplicate while preserving order
-    seen: set[str] = set()
-    unique: list[str] = []
-    for lei_code in leis:
-        if lei_code not in seen:
-            seen.add(lei_code)
-            unique.append(lei_code)
-    return unique
-
-
-def _format_isins(isin_map: dict[str, list[str]], lei_code: str) -> str:
-    """Format ISINs for a given LEI, or empty string if none."""
-    isins = isin_map.get(lei_code, [])
-    return ", ".join(isins) if isins else ""
-
-
-def _render_entity_panel(
-    entity: EntityInfo,
-    isin_map: dict[str, list[str]],
-) -> None:
-    """Render the top-level entity info panel."""
-    info_lines = [
-        f"[bold]Name:[/]          {entity.legal_name}",
-        f"[bold]Status:[/]        {entity.entity_status}",
-        f"[bold]Category:[/]      {entity.entity_category or 'N/A'}",
-        f"[bold]Jurisdiction:[/]  {entity.legal_jurisdiction or 'N/A'}",
-        f"[bold]Legal Addr:[/]    "
-        f"{entity.legal_address_city or ''}, "
-        f"{entity.legal_address_country or ''}",
-        f"[bold]HQ Addr:[/]       "
-        f"{entity.hq_address_city or ''}, "
-        f"{entity.hq_address_country or ''}",
-        f"[bold]Reg. Status:[/]   {entity.registration_status}",
-    ]
-    entity_isins = _format_isins(isin_map, entity.lei)
-    if entity_isins:
-        info_lines.append(f"[bold]ISINs:[/]         {entity_isins}")
-    console.print(
-        Panel(
-            "\n".join(info_lines),
-            title=f"[bold cyan]{entity.lei}[/]",
-            border_style="cyan",
-        )
-    )
-
-
-def _render_exceptions_table(exceptions: Sequence[ReportingException]) -> None:
-    """Render reporting exceptions as a Rich table."""
-    table = Table(title="Reporting Exceptions", border_style="yellow")
-    table.add_column("Category", style="yellow")
-    table.add_column("Reason")
-    table.add_column("Reference")
-    for exc in exceptions:
-        table.add_row(
-            exc.exception_category,
-            exc.exception_reason or "",
-            exc.exception_reference or "",
-        )
-    console.print(table)
-
-
-def _render_report(
-    report: LEIRelationshipReport,
-    *,
-    isin_map: dict[str, list[str]] | None = None,
-) -> None:
-    """Render a full LEI relationship report to the console."""
-    isin_map = isin_map or {}
-
-    _render_entity_panel(report.entity, isin_map)
-
-    if report.direct_parent:
-        _render_parent_section("Direct Parent", report.direct_parent, isin_map)
-    else:
-        console.print("[dim]Direct Parent: None[/]")
-
-    if report.ultimate_parent:
-        _render_parent_section("Ultimate Parent", report.ultimate_parent, isin_map)
-    else:
-        console.print("[dim]Ultimate Parent: None[/]")
-
-    if report.children:
-        _render_related_table("Children", report.children, isin_map)
-    else:
-        console.print("[dim]Children: None[/]")
-
-    if report.siblings:
-        _render_related_table("Siblings", report.siblings, isin_map)
-    else:
-        console.print("[dim]Siblings: None[/]")
-
-    if report.other_relationships:
-        _render_related_table(
-            "Other Relationships", report.other_relationships, isin_map
-        )
-
-    if report.reporting_exceptions:
-        _render_exceptions_table(report.reporting_exceptions)
-
-
-def _render_parent_section(
-    title: str,
-    parent: object,
-    isin_map: dict[str, list[str]] | None = None,
-) -> None:
-    """Render a parent entity as a compact line."""
-    from gleif.models import EntityInfo  # noqa: PLC0415 -- runtime isinstance
-
-    if not isinstance(parent, EntityInfo):
-        return
-    line = (
-        f"[bold]{title}:[/] [cyan]{parent.lei}[/] | "
-        f"{parent.legal_name} | {parent.entity_status} | "
-        f"{parent.legal_jurisdiction or 'N/A'}"
-    )
-    parent_isins = _format_isins(isin_map or {}, parent.lei)
-    if parent_isins:
-        line += f" | ISINs: {parent_isins}"
-    console.print(line)
-
-
-def _render_related_table(
-    title: str,
-    entities: list[RelatedEntity],
-    isin_map: dict[str, list[str]] | None = None,
-) -> None:
-    """Render a list of related entities as a Rich table."""
-    isin_map = isin_map or {}
-    show_isins = bool(isin_map)
-
-    table = Table(title=title, border_style="blue")
-    table.add_column("LEI", style="cyan", no_wrap=True)
-    table.add_column("Name")
-    table.add_column("Relationship Type")
-    if show_isins:
-        table.add_column("ISINs", style="green")
-    for ent in entities:
-        row = [
-            ent.lei,
-            ent.legal_name or "[dim]N/A[/]",
-            ent.relationship_type,
-        ]
-        if show_isins:
-            row.append(_format_isins(isin_map, ent.lei))
-        table.add_row(*row)
-    console.print(table)
-
-
-def _format_node_label(
-    node: object,
-    isin_map: dict[str, list[str]],
-) -> str:
-    """Format a single hierarchy node label for tree display."""
-    from gleif.models import HierarchyNode  # noqa: PLC0415 -- runtime isinstance
-
-    if not isinstance(node, HierarchyNode):
-        return str(node)
-    parts = [f"[cyan]{node.lei}[/]"]
-    if node.legal_name:
-        parts.append(f"[bold]{node.legal_name}[/]")
-    details: list[str] = []
-    if node.legal_jurisdiction:
-        details.append(node.legal_jurisdiction)
-    if node.entity_status:
-        details.append(node.entity_status)
-    if details:
-        parts.append(f"({', '.join(details)})")
-    isins = _format_isins(isin_map, node.lei)
-    if isins:
-        parts.append(f"[green]ISINs: {isins}[/]")
-    return " ".join(parts)
-
-
-def _render_tree(
-    group: CorporateGroup,
-    *,
-    isin_map: dict[str, list[str]] | None = None,
-) -> None:
-    """Render a corporate group as a Rich tree with DAG-aware dedup."""
-
-    isin_map = isin_map or {}
-
-    console.print(f"\n[bold]Corporate Group[/] ({group.total_entities} entities)\n")
-
-    # Build a mapping from parent_lei -> children for tree construction.
-    children_map: dict[str | None, list[HierarchyNode]] = {}
-    for node in group.descendants:
-        children_map.setdefault(node.parent_lei, []).append(node)
-
-    def _add_children(
-        parent_tree: Tree,
-        parent_lei: str,
-        seen: set[str],
-    ) -> None:
-        """Recursively add child nodes to the tree."""
-        for child in children_map.get(parent_lei, []):
-            if child.lei in seen:
-                parent_tree.add(
-                    f"[dim]{child.lei} {child.legal_name or ''} (see above)[/]"
-                )
-                continue
-            seen.add(child.lei)
-            branch = parent_tree.add(_format_node_label(child, isin_map))
-            _add_children(branch, child.lei, seen)
-
-    # The root node is at depth 0.
-    root_nodes = children_map.get(None, [])
-    if not root_nodes:
-        console.print("[yellow]No hierarchy data found.[/]")
-        return
-
-    root = root_nodes[0]
-    seen: set[str] = {root.lei}
-    rich_tree = Tree(_format_node_label(root, isin_map))
-    _add_children(rich_tree, root.lei, seen)
-    console.print(rich_tree)
