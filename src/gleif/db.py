@@ -270,18 +270,24 @@ def _load_csv_into_table(
         Number of rows loaded into ``table``.
     """
     select_clause = _build_select_clause(column_map)
+    # The file path is passed via DuckDB parameter binding ($1) so paths
+    # containing single quotes (legitimate on POSIX filesystems) or other
+    # SQL-significant characters do not break the statement. DuckDB does
+    # not bind identifiers, so the target table name remains an
+    # interpolated f-string. The caller controls `table` via the internal
+    # `load_*` wrappers; it is never user-supplied.
     sql = f"""
         CREATE OR REPLACE TABLE {table} AS
         SELECT {select_clause}
         FROM read_csv(
-            '{csv_path!s}',
+            $1,
             all_varchar=true,
             header=true,
             parallel=true,
             ignore_errors=true
         )
     """
-    con.execute(sql)
+    con.execute(sql, [str(csv_path)])
     result = con.execute(f"SELECT count(*) FROM {table}").fetchone()
     return result[0] if result else 0
 

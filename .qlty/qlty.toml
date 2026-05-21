@@ -128,9 +128,11 @@ set.ignored = true
 match.rules = ["ripgrep:TODO", "ripgrep:NOTE", "radarlint-python:S1135"]
 set.ignored = true
 
-# f-string SQL in db.py interpolates a Path into read_csv('{csv_path}', ...).
-# csv_path is constructed internally from DEFAULT_DATA_DIR, never from user
-# input; DuckDB has no parameter binding for table identifiers or file paths.
+# f-string SQL in db.py interpolates the target table name and the projected
+# column list (both module-level constants controlled by the internal `load_*`
+# wrappers). The csv_path argument is bound via DuckDB parameter placeholders
+# ($1) and never interpolated. DuckDB does not bind identifiers, so the table
+# name remains an f-string by necessity.
 [[triage]]
 match.rules = ["semgrep:sql-injection-format-string", "bandit:B608"]
 match.file_patterns = ["src/gleif/db.py"]
