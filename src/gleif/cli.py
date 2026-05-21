@@ -28,7 +28,6 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from rich.console import Console
 from rich.table import Table
 
 from gleif.constants import (
@@ -42,14 +41,18 @@ from gleif.db import get_connection, get_status, load_all
 from gleif.download import download_all
 from gleif.isin import fetch_isins_batch
 from gleif.queries import get_corporate_group, get_full_report, search_by_name
-from gleif.rendering import collect_report_leis, render_report, render_tree
+from gleif.rendering import (
+    collect_report_leis,
+    console,
+    render_report,
+    render_tree,
+)
 
 app = typer.Typer(
     name="gleif",
     help="GLEIF Golden Copy data loader and LEI relationship query CLI.",
     no_args_is_help=True,
 )
-console = Console()
 _FETCHING_ISINS_MSG = "[dim]Fetching ISINs from GLEIF API...[/]"
 
 DataDirOption = Annotated[
