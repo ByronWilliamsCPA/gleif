@@ -677,12 +677,19 @@
 <td>Transitive via <code>interrogate</code> (dev-only). Vulnerability is a regex DoS in <code>py.path.svnwc</code> (Subversion working-copy helper); the project does not invoke any <code>py.path.svnwc</code> code paths. The <code>py</code> package is unmaintained; remove this entry once <code>interrogate</code> drops its dependency on <code>py</code>.</td>
 <td>2026-07-14</td>
 </tr>
+<tr>
+<td>PYSEC-2026-89</td>
+<td>markdown 3.10.2</td>
+<td>2026-05-21</td>
+<td>Transitive via mkdocs / mkdocs-material / pymdown-extensions (docs-only). No fix is available upstream as of this entry. The runtime CLI never imports markdown; the package is invoked only during <code>mkdocs build</code> and <code>mkdocs serve</code> against repo-controlled <code>.md</code> files. Remove once the upstream advisory is resolved or markdown is no longer reachable.</td>
+<td>2026-07-20</td>
+</tr>
 </tbody>
 </table>
 <p>Review quarterly. No entry should age past 60 days without reassessment.
 By policy, vulnerabilities older than 60 days block releases; review this file
 before tagging any release.</p>
-<p>Last reviewed: 2026-05-15</p>
+<p>Last reviewed: 2026-05-21</p>
 
 
 
