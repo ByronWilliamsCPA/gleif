@@ -102,6 +102,10 @@ ignore-vuln = [
     # by interrogate. We do not exercise the affected svn code path. See
     # docs/known-vulnerabilities.md for review cadence.
     "PYSEC-2022-42969",
+    # PYSEC-2026-89: markdown 3.10.2 (no fix released upstream). Used only at
+    # docs build time via mkdocs / mkdocs-material / pymdown-extensions; the
+    # runtime CLI never invokes markdown. See docs/known-vulnerabilities.md.
+    "PYSEC-2026-89",
 ]
 
 [tool.coverage.run]
