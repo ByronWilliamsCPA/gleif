@@ -207,7 +207,7 @@ def _write_csv(csv_path: Path, headers: list[str], rows: list[list[str]]) -> Non
 # ---------------------------------------------------------------------------
 
 
-def _insert_lei(
+def insert_lei(
     con: duckdb.DuckDBPyConnection,
     *,
     lei: str,
@@ -224,7 +224,7 @@ def _insert_lei(
     )
 
 
-def _insert_relationship(
+def insert_relationship(
     con: duckdb.DuckDBPyConnection,
     *,
     child_lei: str,
@@ -411,19 +411,19 @@ def deep_hierarchy_db(
 
     Hierarchy: Ultimate -> Parent -> [Child A -> Grandchild, Child B].
     """
-    _insert_lei(
+    insert_lei(
         loaded_db,
         lei="GRANDCHILD0000000001",
         legal_name="Grandchild GmbH",
         jurisdiction="DE",
     )
-    _insert_relationship(
+    insert_relationship(
         loaded_db,
         child_lei="GRANDCHILD0000000001",
         parent_lei="CHILD000000000000001",
         relationship_type="IS_DIRECTLY_CONSOLIDATED_BY",
     )
-    _insert_relationship(
+    insert_relationship(
         loaded_db,
         child_lei="GRANDCHILD0000000001",
         parent_lei="ULTIMATE000000000001",
@@ -440,19 +440,19 @@ def diamond_db(
 
     Shared Subsidiary is a child of both Child A and Child B.
     """
-    _insert_lei(
+    insert_lei(
         deep_hierarchy_db,
         lei="SHARED00000000000001",
         legal_name="Shared Subsidiary SA",
         jurisdiction="CH",
     )
-    _insert_relationship(
+    insert_relationship(
         deep_hierarchy_db,
         child_lei="SHARED00000000000001",
         parent_lei="CHILD000000000000001",
         relationship_type="IS_DIRECTLY_CONSOLIDATED_BY",
     )
-    _insert_relationship(
+    insert_relationship(
         deep_hierarchy_db,
         child_lei="SHARED00000000000001",
         parent_lei="CHILD000000000000002",

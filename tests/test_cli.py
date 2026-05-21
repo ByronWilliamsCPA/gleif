@@ -18,6 +18,7 @@ from gleif.db import (
     load_reporting_exceptions,
     update_metadata,
 )
+from tests.conftest import insert_lei, insert_relationship
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -56,26 +57,23 @@ def cli_deep_hierarchy_db_path(cli_db_path: Path) -> Path:
     """Extend cli_db_path with a 4-level hierarchy for tree-render tests."""
     con = duckdb.connect(str(cli_db_path))
     try:
-        con.execute(
-            "INSERT INTO lei_records "
-            "(lei, legal_name, entity_status, registration_status, "
-            "entity_category, legal_jurisdiction) VALUES "
-            "('GRANDCHILD0000000001', 'Grandchild GmbH', "
-            "'ACTIVE', 'ISSUED', 'GENERAL', 'DE')"
+        insert_lei(
+            con,
+            lei="GRANDCHILD0000000001",
+            legal_name="Grandchild GmbH",
+            jurisdiction="DE",
         )
-        con.execute(
-            "INSERT INTO relationships "
-            "(start_node_id, start_node_id_type, end_node_id, "
-            "end_node_id_type, relationship_type, relationship_status) VALUES "
-            "('GRANDCHILD0000000001', 'LEI', 'CHILD000000000000001', "
-            "'LEI', 'IS_DIRECTLY_CONSOLIDATED_BY', 'ACTIVE')"
+        insert_relationship(
+            con,
+            child_lei="GRANDCHILD0000000001",
+            parent_lei="CHILD000000000000001",
+            relationship_type="IS_DIRECTLY_CONSOLIDATED_BY",
         )
-        con.execute(
-            "INSERT INTO relationships "
-            "(start_node_id, start_node_id_type, end_node_id, "
-            "end_node_id_type, relationship_type, relationship_status) VALUES "
-            "('GRANDCHILD0000000001', 'LEI', 'ULTIMATE000000000001', "
-            "'LEI', 'IS_ULTIMATELY_CONSOLIDATED_BY', 'ACTIVE')"
+        insert_relationship(
+            con,
+            child_lei="GRANDCHILD0000000001",
+            parent_lei="ULTIMATE000000000001",
+            relationship_type="IS_ULTIMATELY_CONSOLIDATED_BY",
         )
     finally:
         con.close()
