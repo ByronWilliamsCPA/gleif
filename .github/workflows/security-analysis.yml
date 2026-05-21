@@ -26,7 +26,9 @@ permissions:
 jobs:
   security:
     name: Security Analysis
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@e7781b38647e3ea2550758ea4d6666bf31026660 # main
+    # yamllint disable rule:line-length
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@1b2d33c47cc11a96b9757b49f41873c54e75f57c # main
+    # yamllint enable rule:line-length
     permissions:
       contents: read
       pull-requests: write
@@ -37,9 +39,8 @@ jobs:
       source-directory: src
       no-build: false
       # CodeQL is handled by the dedicated codeql.yml workflow.
-      # OSV + safety are redundant with pip-audit invoked from python-ci.yml,
+      # OSV is redundant with pip-audit invoked from python-ci.yml,
       # which honors [tool.pip-audit] ignore-vuln for accepted vulns
       # documented in docs/known-vulnerabilities.md.
       run-codeql: false
-      run-safety: false
       run-osv: false
