@@ -148,11 +148,11 @@ def render_report(
 
 def render_parent_section(
     title: str,
-    parent: object,
+    parent: EntityInfo | None,
     isin_map: dict[str, list[str]] | None = None,
 ) -> None:
     """Render a parent entity as a compact line."""
-    if not isinstance(parent, EntityInfo):
+    if parent is None:
         return
     line = (
         f"[bold]{title}:[/] [cyan]{parent.lei}[/] | "
@@ -172,7 +172,10 @@ def render_related_table(
 ) -> None:
     """Render a list of related entities as a Rich table."""
     isin_map = isin_map or {}
-    show_isins = bool(isin_map)
+    # Only add the ISINs column when at least one rendered entity actually has
+    # ISINs; a non-empty isin_map covering unrelated LEIs would otherwise
+    # produce a column of empty strings.
+    show_isins = any(isin_map.get(ent.lei) for ent in entities)
 
     table = Table(title=title, border_style="blue")
     table.add_column("LEI", style="cyan", no_wrap=True)
@@ -246,14 +249,20 @@ def render_tree(
             branch = parent_tree.add(format_node_label(child, isin_map))
             _add_children(branch, child.lei, seen)
 
-    # The root node is at depth 0.
+    # Root nodes are at depth 0. A corporate group may have more than one
+    # top-level entity (e.g., distinct ultimate parents whose subsidiaries
+    # all appear in `group.descendants`). Iterate all roots so none are
+    # silently dropped.
     root_nodes = children_map.get(None, [])
     if not root_nodes:
         console.print("[yellow]No hierarchy data found.[/]")
         return
 
-    root = root_nodes[0]
-    seen: set[str] = {root.lei}
-    rich_tree = Tree(format_node_label(root, isin_map))
-    _add_children(rich_tree, root.lei, seen)
-    console.print(rich_tree)
+    seen: set[str] = set()
+    for root in root_nodes:
+        if root.lei in seen:
+            continue
+        seen.add(root.lei)
+        rich_tree = Tree(format_node_label(root, isin_map))
+        _add_children(rich_tree, root.lei, seen)
+        console.print(rich_tree)
