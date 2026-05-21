@@ -47,3 +47,4 @@ jobs:
       coverage-report: false
       fail-fast: false
       timeout-minutes: 30
+      no-build: false

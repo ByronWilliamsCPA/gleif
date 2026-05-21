@@ -243,6 +243,55 @@ def _build_select_clause(column_map: dict[str, str]) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _load_csv_into_table(
+    con: duckdb.DuckDBPyConnection,
+    *,
+    table: str,
+    csv_path: Path,
+    column_map: dict[str, str],
+) -> int:
+    """Bulk-load a projection of a GLEIF CSV into a DuckDB table.
+
+    Issues ``CREATE OR REPLACE TABLE <table> AS SELECT ... FROM
+    read_csv(...)`` and returns the resulting row count. All columns
+    are read as ``VARCHAR`` (``all_varchar=true``) so optional fields
+    do not break type inference; downstream queries cast as needed.
+
+    Args:
+        con: Open DuckDB connection.
+        table: Target table name. Source-controlled via the internal
+            ``load_*`` wrappers; everything user-supplied flows through
+            ``column_map`` and ``csv_path``.
+        csv_path: Path to the extracted CSV file.
+        column_map: Mapping from CSV header name to DB column name; passed
+            through :func:`_build_select_clause`.
+
+    Returns:
+        Number of rows loaded into ``table``.
+    """
+    select_clause = _build_select_clause(column_map)
+    # The file path is passed via DuckDB parameter binding ($1) so paths
+    # containing single quotes (legitimate on POSIX filesystems) or other
+    # SQL-significant characters do not break the statement. DuckDB does
+    # not bind identifiers, so the target table name remains an
+    # interpolated f-string. The caller controls `table` via the internal
+    # `load_*` wrappers; it is never user-supplied.
+    sql = f"""
+        CREATE OR REPLACE TABLE {table} AS
+        SELECT {select_clause}
+        FROM read_csv(
+            $1,
+            all_varchar=true,
+            header=true,
+            parallel=true,
+            ignore_errors=true
+        )
+    """
+    con.execute(sql, [str(csv_path)])
+    result = con.execute(f"SELECT count(*) FROM {table}").fetchone()
+    return result[0] if result else 0
+
+
 def load_lei_records(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     """Load Level 1 LEI records from an extracted CSV.
 
@@ -263,22 +312,12 @@ def load_lei_records(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     Returns:
         Number of rows loaded into ``lei_records``.
     """
-    select_clause = _build_select_clause(LEI_CORE_COLUMNS)
-    sql = f"""
-        CREATE OR REPLACE TABLE lei_records AS
-        SELECT {select_clause}
-        FROM read_csv(
-            '{csv_path!s}',
-            all_varchar=true,
-            header=true,
-            parallel=true,
-            sample_size=100000,
-            ignore_errors=true
-        )
-    """
-    con.execute(sql)
-    result = con.execute("SELECT count(*) FROM lei_records").fetchone()
-    return result[0] if result else 0
+    return _load_csv_into_table(
+        con,
+        table="lei_records",
+        csv_path=csv_path,
+        column_map=LEI_CORE_COLUMNS,
+    )
 
 
 def load_relationships(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
@@ -297,21 +336,12 @@ def load_relationships(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     Returns:
         Number of rows loaded into ``relationships``.
     """
-    select_clause = _build_select_clause(RR_CORE_COLUMNS)
-    sql = f"""
-        CREATE OR REPLACE TABLE relationships AS
-        SELECT {select_clause}
-        FROM read_csv(
-            '{csv_path!s}',
-            all_varchar=true,
-            header=true,
-            parallel=true,
-            ignore_errors=true
-        )
-    """
-    con.execute(sql)
-    result = con.execute("SELECT count(*) FROM relationships").fetchone()
-    return result[0] if result else 0
+    return _load_csv_into_table(
+        con,
+        table="relationships",
+        csv_path=csv_path,
+        column_map=RR_CORE_COLUMNS,
+    )
 
 
 def load_reporting_exceptions(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
@@ -329,21 +359,12 @@ def load_reporting_exceptions(con: duckdb.DuckDBPyConnection, csv_path: Path) ->
     Returns:
         Number of rows loaded into ``reporting_exceptions``.
     """
-    select_clause = _build_select_clause(REPEX_COLUMNS)
-    sql = f"""
-        CREATE OR REPLACE TABLE reporting_exceptions AS
-        SELECT {select_clause}
-        FROM read_csv(
-            '{csv_path!s}',
-            all_varchar=true,
-            header=true,
-            parallel=true,
-            ignore_errors=true
-        )
-    """
-    con.execute(sql)
-    result = con.execute("SELECT count(*) FROM reporting_exceptions").fetchone()
-    return result[0] if result else 0
+    return _load_csv_into_table(
+        con,
+        table="reporting_exceptions",
+        csv_path=csv_path,
+        column_map=REPEX_COLUMNS,
+    )
 
 
 def update_metadata(
