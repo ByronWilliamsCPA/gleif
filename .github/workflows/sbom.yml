@@ -38,7 +38,7 @@ permissions:
 jobs:
   sbom:
     name: SBOM & Security
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac  # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-sbom.yml@claude/sbom-grype-parallel-run-152  # main
     permissions:
       contents: read
       security-events: write
