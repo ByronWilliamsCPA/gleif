@@ -34,11 +34,17 @@ from gleif.constants import (
     DATASET_LABELS,
     DEFAULT_DATA_DIR,
     DEFAULT_DB_PATH,
+    LEI_LENGTH,
     MAX_HIERARCHY_DEPTH,
     DatasetType,
 )
 from gleif.db import get_connection, get_status, load_all
-from gleif.download import download_all
+from gleif.download import (
+    DownloadResult,
+    download_all,
+    find_extracted_csv,
+    read_local_publish_date,
+)
 from gleif.isin import fetch_isins_batch
 from gleif.queries import get_corporate_group, get_full_report, search_by_name
 from gleif.rendering import (
@@ -102,12 +108,6 @@ def load(
     data_dir: DataDirOption = DEFAULT_DATA_DIR,
 ) -> None:
     """Load extracted CSVs into DuckDB."""
-    from gleif.download import (  # noqa: PLC0415 -- load-command-only symbols
-        DownloadResult,
-        find_extracted_csv,
-        read_local_publish_date,
-    )
-
     results: list[DownloadResult] = []
     for dt in DatasetType:
         csv_path = find_extracted_csv(data_dir, dt)
@@ -130,7 +130,7 @@ def load(
     console.print(f"[bold]Loading data into {db}...[/]")
     con = get_connection(db)
     try:
-        load_all(con, results)
+        load_all(con, results, on_progress=console.print)
     finally:
         con.close()
     console.print("[bold green]Load complete.[/]")
@@ -149,7 +149,7 @@ def refresh(
     console.print(f"\n[bold]Loading into {db}...[/]")
     con = get_connection(db)
     try:
-        load_all(con, results)
+        load_all(con, results, on_progress=console.print)
     finally:
         con.close()
     console.print("[bold green]Refresh complete.[/]")
@@ -183,10 +183,10 @@ def lei(
 ) -> None:
     """Look up an LEI and display all related entities."""
     lei_code = lei_code.strip().upper()
-    lei_length = 20
-    if len(lei_code) != lei_length:
+    if len(lei_code) != LEI_LENGTH:
         console.print(
-            f"[red]Invalid LEI '{lei_code}': must be exactly 20 characters.[/]"
+            f"[red]Invalid LEI '{lei_code}': must be exactly {LEI_LENGTH} "
+            f"characters.[/]"
         )
         raise typer.Exit(code=1)
 

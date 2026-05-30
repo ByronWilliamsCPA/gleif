@@ -42,7 +42,13 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 
-from gleif.constants import DATASET_LABELS, DATASET_URLS, DatasetType
+from gleif.constants import (
+    DATASET_LABELS,
+    DATASET_URLS,
+    DOWNLOAD_CHUNK_SIZE,
+    DOWNLOAD_TIMEOUT,
+    DatasetType,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -177,7 +183,9 @@ async def download_dataset(
     url = DATASET_URLS[dataset_type]
     label = DATASET_LABELS[dataset_type]
 
-    async with httpx.AsyncClient(follow_redirects=True, timeout=600.0) as client:
+    async with httpx.AsyncClient(
+        follow_redirects=True, timeout=DOWNLOAD_TIMEOUT
+    ) as client:
         # HEAD request to check publish date and content length
         head_resp = await client.head(url)
         head_resp.raise_for_status()
@@ -212,7 +220,7 @@ async def download_dataset(
         async with client.stream("GET", url) as response:
             response.raise_for_status()
             with zip_path.open("wb") as fh:
-                async for chunk in response.aiter_bytes(chunk_size=65536):
+                async for chunk in response.aiter_bytes(chunk_size=DOWNLOAD_CHUNK_SIZE):
                     fh.write(chunk)
                     if progress is not None and task_id is not None:
                         progress.update(task_id, advance=len(chunk))

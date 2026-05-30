@@ -51,7 +51,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import duckdb
-from rich.console import Console
 
 from gleif.constants import (
     LEI_CORE_COLUMNS,
@@ -61,11 +60,10 @@ from gleif.constants import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from gleif.download import DownloadResult
-
-console = Console()
 
 # ---------------------------------------------------------------------------
 # Connection management
@@ -401,28 +399,38 @@ def update_metadata(
 def load_all(
     con: duckdb.DuckDBPyConnection,
     download_results: list[DownloadResult],
+    *,
+    on_progress: Callable[[str], None] | None = None,
 ) -> dict[DatasetType, int]:
     """Load all downloaded datasets into DuckDB.
 
     Creates the ``load_metadata`` tracking table, dispatches to the
     appropriate ``load_*`` helper for each result, records the
     publish date and row count in ``load_metadata``, and finally
-    builds the secondary indexes. Progress is printed via Rich.
-    Propagates ``KeyError`` if a :class:`DownloadResult` references
-    an unknown dataset type, and ``duckdb.IOException`` if a CSV
-    file cannot be read.
+    builds the secondary indexes. Propagates ``KeyError`` if a
+    :class:`DownloadResult` references an unknown dataset type, and
+    ``duckdb.IOException`` if a CSV file cannot be read.
 
     Args:
         con (duckdb.DuckDBPyConnection): Open DuckDB connection.
         download_results (list[DownloadResult]): List of
             :class:`DownloadResult` from the download phase. Order does
             not matter; the function dispatches by ``dataset_type``.
+        on_progress (Callable[[str], None] | None): Optional callback
+            invoked with a Rich-markup progress message before and after
+            each dataset load and around index creation. When ``None``
+            (the default) the function emits no output, so it is safe to
+            call as a library function; the CLI passes ``console.print``.
 
     Returns:
         dict[DatasetType, int]: Mapping of dataset type to number of rows
         loaded.
     """
     create_schema(con)
+
+    def _report(message: str) -> None:
+        if on_progress is not None:
+            on_progress(message)
 
     loader_map = {
         DatasetType.LEI: load_lei_records,
@@ -433,17 +441,17 @@ def load_all(
     counts: dict[DatasetType, int] = {}
     for result in download_results:
         loader = loader_map[result.dataset_type]
-        console.print(
+        _report(
             f"  Loading [cyan]{result.record_label}[/] from {result.csv_path.name}..."
         )
         count = loader(con, result.csv_path)
         update_metadata(con, result.dataset_type, result.publish_date, count)
         counts[result.dataset_type] = count
-        console.print(f"    [green]{count:,} rows loaded[/]")
+        _report(f"    [green]{count:,} rows loaded[/]")
 
-    console.print("  Creating indexes...")
+    _report("  Creating indexes...")
     create_indexes(con)
-    console.print("  [green]Done.[/]")
+    _report("  [green]Done.[/]")
 
     return counts
 
@@ -473,4 +481,12 @@ def get_status(
         ).fetchall()
     except duckdb.CatalogException:
         return []
-    return rows
+    return [
+        (
+            str(row[0]),
+            str(row[1]) if row[1] is not None else "",
+            str(row[2]),
+            int(row[3]) if row[3] is not None else 0,
+        )
+        for row in rows
+    ]

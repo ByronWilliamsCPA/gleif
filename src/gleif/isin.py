@@ -26,11 +26,31 @@ change rather than expected operating conditions.
 
 from __future__ import annotations
 
+from typing import Any
+
 import httpx
 
-#: Base URL for the GLEIF public LEI records REST API.
-GLEIF_API_BASE = "https://api.gleif.org/api/v1/lei-records"
-_REQUEST_TIMEOUT = 10.0
+from gleif.constants import GLEIF_API_BASE, ISIN_REQUEST_TIMEOUT
+
+
+def _extract_isins(payload: Any) -> list[str]:
+    """Pull the ISIN strings out of a GLEIF JSON:API response body.
+
+    Args:
+        payload: Decoded JSON from an ``/isins`` response. Expected to
+            carry a top-level ``"data"`` array of objects with an
+            ``"attributes"`` dict containing an ``"isin"`` field.
+
+    Returns:
+        List of ISIN strings; empty if ``data`` is absent or no entry
+        carries an ``isin``.
+    """
+    data = payload.get("data", [])
+    return [
+        item["attributes"]["isin"]
+        for item in data
+        if item.get("attributes", {}).get("isin")
+    ]
 
 
 def fetch_isins(lei: str) -> list[str]:
@@ -51,18 +71,13 @@ def fetch_isins(lei: str) -> list[str]:
     try:
         response = httpx.get(
             f"{GLEIF_API_BASE}/{lei}/isins",
-            timeout=_REQUEST_TIMEOUT,
+            timeout=ISIN_REQUEST_TIMEOUT,
         )
         response.raise_for_status()
     except httpx.HTTPError:
         return []
 
-    data = response.json().get("data", [])
-    return [
-        item["attributes"]["isin"]
-        for item in data
-        if item.get("attributes", {}).get("isin")
-    ]
+    return _extract_isins(response.json())
 
 
 def fetch_isins_batch(leis: list[str]) -> dict[str, list[str]]:
@@ -81,19 +96,14 @@ def fetch_isins_batch(leis: list[str]) -> dict[str, list[str]]:
         so ``result.get(lei, [])`` is the safe access pattern.
     """
     results: dict[str, list[str]] = {}
-    with httpx.Client(timeout=_REQUEST_TIMEOUT) as client:
+    with httpx.Client(timeout=ISIN_REQUEST_TIMEOUT) as client:
         for lei_code in leis:
             try:
                 response = client.get(
                     f"{GLEIF_API_BASE}/{lei_code}/isins",
                 )
                 response.raise_for_status()
-                data = response.json().get("data", [])
-                isins = [
-                    item["attributes"]["isin"]
-                    for item in data
-                    if item.get("attributes", {}).get("isin")
-                ]
+                isins = _extract_isins(response.json())
                 if isins:
                     results[lei_code] = isins
             except httpx.HTTPError:
