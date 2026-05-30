@@ -1,7 +1,6 @@
 # gleif
 
 [![CI](https://github.com/ByronWilliamsCPA/gleif/actions/workflows/ci.yml/badge.svg)](https://github.com/ByronWilliamsCPA/gleif/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/pypi/pyversions/gleif)](https://pypi.org/project/gleif/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ByronWilliamsCPA/gleif/badge)](https://securityscorecards.dev/viewer/?uri=github.com/ByronWilliamsCPA/gleif)
 
@@ -45,11 +44,7 @@ Children (2)
 
 ## Installation
 
-```bash
-uv tool install gleif
-```
-
-Or from source:
+The package is not yet published to PyPI; install from source:
 
 ```bash
 git clone https://github.com/ByronWilliamsCPA/gleif.git
