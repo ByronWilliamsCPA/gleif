@@ -36,7 +36,7 @@ jobs:
       security-events: write
       actions: read
     with:
-      python-version: '3.11'
+      python-version: '3.12'
       source-directory: src
       no-build: false
       # CodeQL is handled by the dedicated codeql.yml workflow.
