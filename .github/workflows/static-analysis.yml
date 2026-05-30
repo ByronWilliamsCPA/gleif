@@ -68,7 +68,9 @@ jobs:
         run: uv run basedpyright src
 
       - name: Security scan (semgrep)
-        run: uvx --from semgrep semgrep --config .semgrep.yaml --error src
+        # Pin the semgrep version so a new release cannot change parsing/rules
+        # and fail a previously-green PR. Bump deliberately.
+        run: uvx --from 'semgrep==1.164.0' semgrep --config .semgrep.yaml --error src
 
       - name: Dependency audit (pip-audit)
         run: >-

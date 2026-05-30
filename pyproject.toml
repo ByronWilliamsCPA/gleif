@@ -46,7 +46,10 @@ packages = ["src/gleif"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py312"
+# Target the minimum supported version (the requires-python floor), not the dev
+# interpreter, so ruff does not rewrite to or overlook 3.12-only syntax that
+# would break 3.11 users.
+target-version = "py311"
 src = ["src"]
 
 [tool.ruff.lint]
@@ -79,7 +82,7 @@ ignore = [
 max-args = 6
 
 [tool.basedpyright]
-pythonVersion = "3.12"
+pythonVersion = "3.11"  # lowest supported version, to catch 3.11 incompatibilities
 pythonPlatform = "All"
 typeCheckingMode = "strict"
 strictListInference = true
