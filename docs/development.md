@@ -53,13 +53,11 @@ CLI tests use `typer.testing.CliRunner` with on-disk DuckDB files in `tmp_path`.
 
 | Scope | Threshold |
 | ----- | --------- |
-| Line coverage | 65% (interim) |
+| Line coverage | 80% |
 | Branch coverage | 70% |
 
-The line-coverage gate is an interim 65% (`fail_under` in `pyproject.toml`); it
-is tracked to rise to 80% once `download.py` and the CLI command paths gain
-tests. Critical-path and new-patch percentages are review targets, not enforced
-gates.
+The line-coverage gate is 80% (`fail_under` in `pyproject.toml`). Critical-path
+and new-patch percentages are review targets, not enforced gates.
 
 ## Linting and type checking
 
@@ -107,7 +105,7 @@ quality and security gates:
 
 ### CI (`ci.yml`)
 
-1. Test suite with 65% (interim) coverage gate
+1. Test suite with 80% coverage gate
 2. Quality checks: `ruff format --check`, `ruff check`, `basedpyright`
 3. CI gate that blocks merge on any failure
 

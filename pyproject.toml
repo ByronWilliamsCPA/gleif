@@ -118,7 +118,7 @@ ignore-vuln = [
 branch = true
 
 [tool.coverage.report]
-fail_under = 65  # interim: raise to 80 once download.py and CLI command tests are added
+fail_under = 80
 
 [tool.pydoclint]
 style = "google"
