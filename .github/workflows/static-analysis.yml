@@ -1,0 +1,77 @@
+# GLEIF Golden Copy CLI - Static Analysis
+#
+# Blocking gate for checks that previously ran only in local pre-commit hooks
+# or in advisory (comment-mode) tooling, so they could be skipped without CI
+# noticing:
+#   - basedpyright (strict) type checking
+#   - semgrep security rules (.semgrep.yaml, ERROR severities)
+#   - pip-audit with the accepted-vulnerability suppressions applied explicitly
+#
+# pip-audit's CLI does not read [tool.pip-audit] from pyproject.toml, so the
+# --ignore-vuln flags below are the authoritative suppression for the vulns
+# documented in docs/known-vulnerabilities.md.
+
+name: Static Analysis
+
+on:
+  merge_group:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  push:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-analysis-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --dev
+
+      - name: Type check (basedpyright strict)
+        run: uv run basedpyright src
+
+      - name: Security scan (semgrep)
+        run: uvx --from semgrep semgrep --config .semgrep.yaml --error src
+
+      - name: Dependency audit (pip-audit)
+        run: >-
+          uv run pip-audit
+          --ignore-vuln PYSEC-2022-42969
+          --ignore-vuln PYSEC-2026-89
