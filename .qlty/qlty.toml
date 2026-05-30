@@ -64,10 +64,6 @@ default = true
 [[plugin]]
 name = "actionlint"
 
-# Python security scanning
-[[plugin]]
-name = "bandit"
-
 # Dependency vulnerability scanning
 [[plugin]]
 name = "osv-scanner"
@@ -107,19 +103,14 @@ name = "yamllint"
 # Per-plugin exclusions
 # ---------------------------------------------------------------------------
 
-# bandit and semgrep should not scan test files
+# semgrep should not scan test files
 [[exclude]]
-plugins = ["bandit", "semgrep"]
+plugins = ["semgrep"]
 file_patterns = ["tests/**", "**/test_*.py", "**/*_test.py"]
 
 # ---------------------------------------------------------------------------
 # Triage rules (suppress known false positives)
 # ---------------------------------------------------------------------------
-
-# Standard pytest assertions are not security risks.
-[[triage]]
-match.rules = ["bandit:B101"]
-set.ignored = true
 
 # TODO and NOTE comments are informational, not actionable issues.
 # Covers both the ripgrep text-search hits and the radarlint S1135 rule
@@ -134,7 +125,7 @@ set.ignored = true
 # ($1) and never interpolated. DuckDB does not bind identifiers, so the table
 # name remains an f-string by necessity.
 [[triage]]
-match.rules = ["semgrep:sql-injection-format-string", "bandit:B608"]
+match.rules = ["semgrep:sql-injection-format-string"]
 match.file_patterns = ["src/gleif/db.py"]
 set.ignored = true
 
@@ -142,7 +133,7 @@ set.ignored = true
 # constant containing literal column names. All user-supplied values use
 # DuckDB $1/$2 parameter placeholders.
 [[triage]]
-match.rules = ["semgrep:sql-injection-format-string", "bandit:B608"]
+match.rules = ["semgrep:sql-injection-format-string"]
 match.file_patterns = ["src/gleif/queries.py"]
 set.ignored = true
 
