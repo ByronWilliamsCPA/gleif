@@ -137,9 +137,7 @@ class TestDownloadDataset:
         client = _fake_client(publish_date="2024-09-01", chunks=[_zip_bytes(member)])
         _patch_async_client(mock_client_cls, client)
 
-        result = asyncio.run(
-            download_dataset(DatasetType.LEI, tmp_path, force=True)
-        )
+        result = asyncio.run(download_dataset(DatasetType.LEI, tmp_path, force=True))
 
         assert result.csv_path.name == member
         assert result.csv_path.exists()

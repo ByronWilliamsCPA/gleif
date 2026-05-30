@@ -139,12 +139,8 @@ class TestRenderTree:
 
     def test_diamond_marks_repeat(self, capsys: pytest.CaptureFixture[str]) -> None:
         root = HierarchyNode(lei="ROOT", legal_name="Root", depth=0, parent_lei=None)
-        branch_a = HierarchyNode(
-            lei="A", legal_name="A Co", depth=1, parent_lei="ROOT"
-        )
-        branch_b = HierarchyNode(
-            lei="B", legal_name="B Co", depth=1, parent_lei="ROOT"
-        )
+        branch_a = HierarchyNode(lei="A", legal_name="A Co", depth=1, parent_lei="ROOT")
+        branch_b = HierarchyNode(lei="B", legal_name="B Co", depth=1, parent_lei="ROOT")
         shared_via_a = HierarchyNode(
             lei="SHARED", legal_name="Shared", depth=2, parent_lei="A"
         )
