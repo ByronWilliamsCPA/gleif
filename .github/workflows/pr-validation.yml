@@ -3,6 +3,7 @@
 name: PR Validation
 
 on:
+  merge_group:
   pull_request:
     types: [opened, synchronize, reopened, edited]
     branches:
@@ -12,13 +13,17 @@ on:
 permissions: {}
 
 concurrency:
-  group: pr-validation-${{ github.event.pull_request.number }}
+  group: pr-validation-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   title-check:
     name: PR Title Format
     runs-on: ubuntu-latest
+    # PR title/body live only in the pull_request event payload. On
+    # merge_group refs this job is skipped; the gate jobs below treat a
+    # skipped result as a pass so the merge queue is not blocked.
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     permissions:
       pull-requests: read
@@ -46,6 +51,8 @@ jobs:
   body-check:
     name: PR Body Non-Empty
     runs-on: ubuntu-latest
+    # Skipped on merge_group refs (no pull_request payload); see title-check.
+    if: github.event_name == 'pull_request'
     timeout-minutes: 5
     permissions:
       pull-requests: read
@@ -85,7 +92,10 @@ jobs:
           TITLE_RESULT: ${{ needs.title-check.result }}
           BODY_RESULT: ${{ needs.body-check.result }}
         run: |
-          if [ "$TITLE_RESULT" != "success" ] || [ "$BODY_RESULT" != "success" ]; then
+          # On merge_group refs the PR-context checks are skipped; treat
+          # success and skipped as passing, fail only on a real failure.
+          if { [ "$TITLE_RESULT" != "success" ] && [ "$TITLE_RESULT" != "skipped" ]; } || \
+             { [ "$BODY_RESULT" != "success" ] && [ "$BODY_RESULT" != "skipped" ]; }; then
             echo "::error::PR validation checks failed - dependency and standards gate blocked."
             exit 1
           fi
@@ -113,7 +123,9 @@ jobs:
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| PR Title Format | $TITLE_RESULT |" >> $GITHUB_STEP_SUMMARY
           echo "| PR Body Non-Empty | $BODY_RESULT |" >> $GITHUB_STEP_SUMMARY
-          if [ "$TITLE_RESULT" != "success" ] || [ "$BODY_RESULT" != "success" ]; then
+          # success or skipped both pass; skipped happens on merge_group refs.
+          if { [ "$TITLE_RESULT" != "success" ] && [ "$TITLE_RESULT" != "skipped" ]; } || \
+             { [ "$BODY_RESULT" != "success" ] && [ "$BODY_RESULT" != "skipped" ]; }; then
             echo "::error::One or more PR validation checks failed."
             exit 1
           fi
