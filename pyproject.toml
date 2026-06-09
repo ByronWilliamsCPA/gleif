@@ -121,8 +121,7 @@ arg-type-hints-in-docstring = true
 arg-type-hints-in-signature = true
 skip-checking-raises = false
 require-return-section-when-returning-nothing = false
-require-return-section-when-returning-values = false
-require-yield-section-when-yielding-values = false
+require-yield-section-when-yielding-nothing = false
 
 [tool.interrogate]
 ignore-init-method = true
