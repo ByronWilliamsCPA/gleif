@@ -7,6 +7,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- Release workflow (`release.yml`): Sigstore keyless signing on tagged releases
+- OpenSSF Scorecard workflow (`scorecard.yml`) for continuous supply-chain
+  health scoring
+- `SECURITY.md`, `CONTRIBUTING.md` (OpenSSF required community files)
+- `CODEOWNERS` and interrogate pre-commit hooks
+
 ### Changed
 
 - CI workflows (`ci.yml`, `release.yml`, `scorecard.yml`, `security-analysis.yml`)
@@ -66,9 +74,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   to prevent ZIP path traversal via crafted `../../` entry names
 - `create_schema()` docstring: corrected to reflect it only creates the
   `load_metadata` tracking table, not all data tables
-- `docs/development.md`: corrected BasedPyright mode (`strict`, not
-  `standard`), coverage threshold (65%, not 80%), and dependency scanning
-  description (dependency-review on PRs, osv-scanner via security workflow)
+- `docs/development.md`: corrected BasedPyright mode to `strict` and the
+  dependency-scanning description (dependency-review on PRs, osv-scanner via
+  security workflow) to match enforced settings
 - `docs/known-vulnerabilities.md`: softened OpenSSF release gate claim to
   reflect a policy requirement rather than automated CI enforcement
 - `reusable-scorecard.yml`: wired `SCORECARD_TOKEN` through the

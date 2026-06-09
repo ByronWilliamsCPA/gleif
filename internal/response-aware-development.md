@@ -36,15 +36,19 @@ AI coding assistants (including Claude) make implicit assumptions that:
 
 ```python
 # This code killed production at 3 AM:
-conn = get_connection()
-results = conn.execute("SELECT * FROM lei_records WHERE lei = ?", [lei]).fetchall()
-# Assumes connection is always valid and table is loaded - WRONG under cold start
+con = get_connection(db_path)
+results = con.execute("SELECT * FROM lei_records WHERE lei = $1", [lei]).fetchall()
+# Assumes the table is loaded - WRONG under cold start (the tables do not exist
+# until 'gleif load' has run)
 
-# This code survived production:
-conn = get_connection()
-if conn is None or not table_exists(conn, "lei_records"):
-    raise RuntimeError("Database not initialized; run 'gleif load' first")
-results = conn.execute("SELECT * FROM lei_records WHERE lei = ?", [lei]).fetchall()
+# This code survived production (the pattern the codebase actually uses):
+con = get_connection(db_path)
+try:
+    results = con.execute(
+        "SELECT * FROM lei_records WHERE lei = $1", [lei]
+    ).fetchall()
+except duckdb.CatalogException as exc:
+    raise RuntimeError("Database not initialized; run 'gleif load' first") from exc
 ```
 
 ## Solution Architecture

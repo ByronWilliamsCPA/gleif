@@ -32,7 +32,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from gleif.constants import DIRECT_PARENT, MAX_HIERARCHY_DEPTH, ULTIMATE_PARENT
+from gleif.constants import (
+    ACTIVE_STATUS,
+    DIRECT_PARENT,
+    MAX_HIERARCHY_DEPTH,
+    ULTIMATE_PARENT,
+)
 from gleif.models import (
     CorporateGroup,
     EntityInfo,
@@ -77,6 +82,33 @@ _ENTITY_COLS = """
     l.entity_category, l.legal_jurisdiction, l.legal_address_city,
     l.legal_address_country, l.hq_address_city, l.hq_address_country
 """
+
+
+def _rows_to_related(
+    rows: list[tuple[object, ...]], direction: str
+) -> list[RelatedEntity]:
+    """Convert relationship rows to RelatedEntity dataclasses.
+
+    Args:
+        rows (list[tuple[object, ...]]): Tuples of ``(lei, legal_name,
+            relationship_type, relationship_status)``.
+        direction (str): Direction label stamped on each entity
+            (``"child"``, ``"sibling"``, or ``"other"``).
+
+    Returns:
+        list[RelatedEntity]: List of :class:`gleif.models.RelatedEntity`,
+        one per row.
+    """
+    return [
+        RelatedEntity(
+            lei=str(row[0]),
+            legal_name=str(row[1]) if row[1] else None,
+            relationship_type=str(row[2]),
+            relationship_status=str(row[3]) if row[3] else "",
+            direction=direction,
+        )
+        for row in rows
+    ]
 
 
 def get_entity(con: duckdb.DuckDBPyConnection, lei: str) -> EntityInfo | None:
@@ -135,10 +167,10 @@ def get_parent(
         LEFT JOIN lei_records l ON l.lei = r.end_node_id
         WHERE r.start_node_id = $1
           AND r.relationship_type = $2
-          AND r.relationship_status = 'ACTIVE'
+          AND r.relationship_status = $3
         LIMIT 1
         """,
-        [lei, relationship_type],
+        [lei, relationship_type, ACTIVE_STATUS],
     ).fetchone()
     if row is None:
         return None
@@ -174,21 +206,12 @@ def get_children(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity
         FROM relationships r
         LEFT JOIN lei_records l ON l.lei = r.start_node_id
         WHERE r.end_node_id = $1
-          AND r.relationship_status = 'ACTIVE'
+          AND r.relationship_status = $2
         ORDER BY l.legal_name
         """,
-        [lei],
+        [lei, ACTIVE_STATUS],
     ).fetchall()
-    return [
-        RelatedEntity(
-            lei=str(row[0]),
-            legal_name=str(row[1]) if row[1] else None,
-            relationship_type=str(row[2]),
-            relationship_status=str(row[3]) if row[3] else "",
-            direction="child",
-        )
-        for row in rows
-    ]
+    return _rows_to_related(rows, "child")
 
 
 def get_siblings(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity]:
@@ -219,26 +242,17 @@ def get_siblings(con: duckdb.DuckDBPyConnection, lei: str) -> list[RelatedEntity
             FROM relationships r1
             WHERE r1.start_node_id = $1
               AND r1.relationship_type = $2
-              AND r1.relationship_status = 'ACTIVE'
+              AND r1.relationship_status = $3
             LIMIT 1
         )
         AND r2.relationship_type = $2
-        AND r2.relationship_status = 'ACTIVE'
+        AND r2.relationship_status = $3
         AND r2.start_node_id != $1
         ORDER BY l.legal_name
         """,
-        [lei, DIRECT_PARENT],
+        [lei, DIRECT_PARENT, ACTIVE_STATUS],
     ).fetchall()
-    return [
-        RelatedEntity(
-            lei=str(row[0]),
-            legal_name=str(row[1]) if row[1] else None,
-            relationship_type=str(row[2]),
-            relationship_status=str(row[3]) if row[3] else "",
-            direction="sibling",
-        )
-        for row in rows
-    ]
+    return _rows_to_related(rows, "sibling")
 
 
 def get_other_relationships(
@@ -277,21 +291,12 @@ def get_other_relationships(
         )
         WHERE (r.start_node_id = $1 OR r.end_node_id = $1)
           AND r.relationship_type NOT IN ($2, $3)
-          AND r.relationship_status = 'ACTIVE'
+          AND r.relationship_status = $4
         ORDER BY l.legal_name
         """,
-        [lei, DIRECT_PARENT, ULTIMATE_PARENT],
+        [lei, DIRECT_PARENT, ULTIMATE_PARENT, ACTIVE_STATUS],
     ).fetchall()
-    return [
-        RelatedEntity(
-            lei=str(row[0]),
-            legal_name=str(row[1]) if row[1] else None,
-            relationship_type=str(row[2]),
-            relationship_status=str(row[3]) if row[3] else "",
-            direction="other",
-        )
-        for row in rows
-    ]
+    return _rows_to_related(rows, "other")
 
 
 def get_reporting_exceptions(
@@ -402,7 +407,7 @@ def get_ancestor_chain(
             JOIN relationships r
                 ON r.start_node_id = a.node_lei
                 AND r.relationship_type = $2
-                AND r.relationship_status = 'ACTIVE'
+                AND r.relationship_status = $4
             WHERE a.depth < $3
               AND NOT list_contains(a.path, r.end_node_id)
         )
@@ -413,7 +418,7 @@ def get_ancestor_chain(
         LEFT JOIN lei_records l ON l.lei = a.node_lei
         ORDER BY a.depth
         """,
-        [lei, DIRECT_PARENT, max_depth],
+        [lei, DIRECT_PARENT, max_depth, ACTIVE_STATUS],
     ).fetchall()
     return [_row_to_hierarchy_node(row) for row in rows]
 
@@ -465,7 +470,7 @@ def get_descendant_tree(
             JOIN relationships r
                 ON r.end_node_id = d.node_lei
                 AND r.relationship_type = $2
-                AND r.relationship_status = 'ACTIVE'
+                AND r.relationship_status = $4
             WHERE d.depth < $3
               AND NOT list_contains(d.path, r.start_node_id)
         )
@@ -485,7 +490,7 @@ def get_descendant_tree(
         WHERE sub.rn = 1
         ORDER BY sub.depth, sub.legal_name
         """,
-        [lei, DIRECT_PARENT, max_depth],
+        [lei, DIRECT_PARENT, max_depth, ACTIVE_STATUS],
     ).fetchall()
     return [_row_to_hierarchy_node(row) for row in rows]
 

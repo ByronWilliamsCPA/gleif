@@ -46,6 +46,9 @@ packages = ["src/gleif"]
 
 [tool.ruff]
 line-length = 88
+# Target the minimum supported version (the requires-python floor), not the dev
+# interpreter, so ruff does not rewrite to or overlook 3.12-only syntax that
+# would break 3.11 users.
 target-version = "py311"
 src = ["src"]
 
@@ -79,7 +82,7 @@ ignore = [
 max-args = 6
 
 [tool.basedpyright]
-pythonVersion = "3.11"
+pythonVersion = "3.11"  # lowest supported version, to catch 3.11 incompatibilities
 pythonPlatform = "All"
 typeCheckingMode = "strict"
 strictListInference = true
@@ -97,6 +100,9 @@ exclude_dirs = ["tests"]
 skips = ["B608"]  # read_csv() paths and column constants are app-controlled, not user input
 
 [tool.pip-audit]
+# NOTE: pip-audit's CLI does not read this table. These IDs are passed as
+# explicit --ignore-vuln flags in .github/workflows/static-analysis.yml, which
+# is the authoritative suppression. This block is kept as documentation only.
 ignore-vuln = [
     # PYSEC-2022-42969: regex DoS in `py.path` (svnwc), pulled in transitively
     # by interrogate. We do not exercise the affected svn code path. See
@@ -112,7 +118,7 @@ ignore-vuln = [
 branch = true
 
 [tool.coverage.report]
-fail_under = 65  # interim: raise to 80 once download.py and CLI command tests are added
+fail_under = 80
 
 [tool.pydoclint]
 style = "google"
@@ -146,6 +152,7 @@ dev = [
     "pre-commit>=3.6",
     "pip-audit>=2.7",
     "bandit[toml]>=1.7",
+    "detect-secrets>=1.5.0",
     "mkdocs-material>=9.5,<10",
     "pydoclint>=0.8.4",
     "interrogate>=1.7.0",

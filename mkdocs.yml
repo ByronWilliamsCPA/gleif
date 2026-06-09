@@ -9,6 +9,10 @@ site_description: >-
   DuckDB, and querying LEI relationship hierarchies.
 
 docs_dir: docs
+# Internal artifacts that live under docs/ but must not ship to the public site.
+exclude_docs: |
+  audit/
+  known-vulnerabilities-template.md
 site_url: https://byronwilliamscpa.github.io/gleif/
 repo_url: https://github.com/ByronWilliamsCPA/gleif
 repo_name: ByronWilliamsCPA/gleif
@@ -76,4 +80,12 @@ nav:
   - Architecture:
       - Overview: architecture/index.md
       - Data Model & Schema: architecture/data-model.md
+      - Decision Records:
+          - Overview: adr/index.md
+          - 0001 DuckDB as local store: adr/0001-duckdb-as-local-store.md
+          - 0002 Async download, sync load: adr/0002-async-download-sync-load.md
+          - 0003 Frozen dataclasses: adr/0003-frozen-dataclasses-as-return-types.md
   - Development: development.md
+  - Security:
+      - Known Vulnerabilities: known-vulnerabilities.md
+      - Scanners: scanners.md

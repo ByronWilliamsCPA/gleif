@@ -36,12 +36,13 @@ jobs:
       security-events: write
       actions: read
     with:
-      python-version: '3.11'
+      python-version: '3.12'
       source-directory: src
       no-build: false
       # CodeQL is handled by the dedicated codeql.yml workflow.
-      # OSV is redundant with pip-audit invoked from python-ci.yml,
-      # which honors [tool.pip-audit] ignore-vuln for accepted vulns
-      # documented in docs/known-vulnerabilities.md.
+      # OSV is redundant with pip-audit. pip-audit's accepted-vulnerability
+      # suppressions (docs/known-vulnerabilities.md) are applied as explicit
+      # --ignore-vuln flags in static-analysis.yml; pip-audit's CLI does not
+      # read [tool.pip-audit] from pyproject.toml.
       run-codeql: false
       run-osv: false

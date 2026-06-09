@@ -20,6 +20,21 @@ from pathlib import Path
 #: Base URL for the GLEIF golden copy v2 publishes endpoint.
 GLEIF_BASE_URL = "https://goldencopy.gleif.org/api/v2/golden-copies/publishes"
 
+#: Base URL for the GLEIF public LEI records REST API (used for ISIN lookups).
+GLEIF_API_BASE = "https://api.gleif.org/api/v1/lei-records"
+
+#: Timeout (seconds) for GLEIF REST API (ISIN) requests.
+ISIN_REQUEST_TIMEOUT = 10.0
+
+#: Timeout (seconds) for golden-copy ZIP downloads. Large files, so 10 minutes.
+DOWNLOAD_TIMEOUT = 600.0
+
+#: Chunk size (bytes, 64 KiB) for streaming ZIP downloads to disk.
+DOWNLOAD_CHUNK_SIZE = 65536
+
+#: Length of a valid ISO 17442 LEI code.
+LEI_LENGTH = 20
+
 #: Default directory for downloaded ZIPs and extracted CSV files.
 DEFAULT_DATA_DIR = Path.home() / ".local" / "share" / "gleif" / "data"
 
@@ -158,6 +173,10 @@ ULTIMATE_PARENT = "IS_ULTIMATELY_CONSOLIDATED_BY"
 #: Set of consolidation relationship types treated as parent-of links
 #: by the hierarchy traversal queries.
 CONSOLIDATION_TYPES = {DIRECT_PARENT, ULTIMATE_PARENT}
+
+#: Relationship status treated as live by the query layer. Lapsed or
+#: retired relationships carry other statuses and are ignored.
+ACTIVE_STATUS = "ACTIVE"
 
 #: Default upper bound on recursion depth for hierarchy traversals.
 #: Used to keep recursive CTEs bounded even when the data contains
