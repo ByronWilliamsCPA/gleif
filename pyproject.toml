@@ -114,9 +114,14 @@ branch = true
 [tool.coverage.report]
 fail_under = 65  # interim: raise to 80 once download.py and CLI command tests are added
 
-[tool.darglint]
-docstring_style = "google"
-strictness = "short"
+[tool.pydoclint]
+style = "google"
+exclude = '\.git|tests/|scripts/|benchmarks/|tools/|noxfile\.py|\.claude/'
+arg-type-hints-in-docstring = true
+arg-type-hints-in-signature = true
+skip-checking-raises = false
+require-return-section-when-returning-nothing = false
+require-yield-section-when-yielding-nothing = false
 
 [tool.interrogate]
 ignore-init-method = true
@@ -142,6 +147,6 @@ dev = [
     "pip-audit>=2.7",
     "bandit[toml]>=1.7",
     "mkdocs-material>=9.5,<10",
-    "darglint>=1.8.1",
+    "pydoclint>=0.8.4",
     "interrogate>=1.7.0",
 ]
