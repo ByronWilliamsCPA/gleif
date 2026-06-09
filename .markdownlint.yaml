@@ -23,3 +23,11 @@ MD025: false
 # Code block style - disabled; MkDocs admonitions require 4-space-indented fenced
 # blocks which markdownlint treats as "indented style" mixed with fenced style
 MD046: false
+
+# Table column style - disabled. The repo's pinned pre-commit linter
+# (markdownlint-cli v0.38.0) predates this rule, so the project has never
+# adopted a single table-pipe-spacing style; compact tables are used throughout
+# the audit and internal reports. qlty bundles a newer markdownlint that added
+# MD060, so disabling it here keeps both linters consistent with the repo's
+# declared standard rather than churning historical tables.
+MD060: false

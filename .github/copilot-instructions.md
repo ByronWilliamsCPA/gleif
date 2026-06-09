@@ -22,7 +22,7 @@ by pre-commit hooks and ruff; do not flag them.
 
 - Framework: pytest
 - Database fixtures: in-memory DuckDB populated via tests/conftest.py
-- Coverage target: 65% line (interim; will be raised to 80% once download.py and CLI command tests are added), 70% branch
+- Coverage target: 80% line, 70% branch
 
 ## Patterns to reinforce
 

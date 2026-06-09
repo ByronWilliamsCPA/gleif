@@ -76,6 +76,10 @@ jobs:
           fi
           echo "PR body is present."
 
+  # NOTE: despite the name, this job performs no dependency or standards
+  # scanning; it only gates on the PR title and body results above. The job id
+  # and name are kept stable because they may be a required status check; see
+  # CICD-08 in docs/audit for the rename rationale.
   dependency-standards-validation:
     name: Dependency & Standards Validation
     runs-on: ubuntu-latest

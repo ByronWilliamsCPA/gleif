@@ -17,6 +17,12 @@ rules:
     paths:
       exclude:
         - tests/
+        # db.py and queries.py interpolate only app-controlled identifiers
+        # (internal table names, the static _ENTITY_COLS column list); every
+        # user-supplied value is bound via $1/$2. Same file-level exemption as
+        # ruff S608 / bandit B608 in pyproject.toml, with matching rationale.
+        - "src/gleif/db.py"
+        - "src/gleif/queries.py"
 
   # Hardcoded absolute paths
   - id: hardcoded-absolute-path

@@ -39,23 +39,24 @@ class EntityInfo:
     ``registration_status``) default to an empty string instead.
 
     Attributes:
-        lei: 20-character Legal Entity Identifier (uppercase
+        lei (str): 20-character Legal Entity Identifier (uppercase
             alphanumeric).
-        legal_name: Registered legal name. Empty string if blank in
+        legal_name (str): Registered legal name. Empty string if blank in
             the source CSV.
-        entity_status: Lifecycle status of the entity, e.g. ``ACTIVE``
+        entity_status (str): Lifecycle status of the entity, e.g. ``ACTIVE``
             or ``INACTIVE``. Empty string if blank.
-        registration_status: Status of the LEI registration itself,
+        registration_status (str): Status of the LEI registration itself,
             e.g. ``ISSUED``, ``LAPSED``, ``RETIRED``. Empty string
             if blank.
-        entity_category: GLEIF entity category, e.g. ``GENERAL``,
+        entity_category (str | None): GLEIF entity category, e.g. ``GENERAL``,
             ``BRANCH``, ``FUND``.
-        legal_jurisdiction: ISO 3166-2 jurisdiction code of the entity.
-        legal_address_city: City of the registered legal address.
-        legal_address_country: ISO 3166-1 country code of the legal
-            address.
-        hq_address_city: City of the headquarters address.
-        hq_address_country: ISO 3166-1 country code of the
+        legal_jurisdiction (str | None): ISO 3166-2 jurisdiction code of the
+            entity.
+        legal_address_city (str | None): City of the registered legal address.
+        legal_address_country (str | None): ISO 3166-1 country code of the
+            legal address.
+        hq_address_city (str | None): City of the headquarters address.
+        hq_address_country (str | None): ISO 3166-1 country code of the
             headquarters address.
     """
 
@@ -80,19 +81,19 @@ class RelatedEntity:
     :func:`gleif.queries.get_other_relationships`.
 
     Attributes:
-        lei: 20-character LEI of the related entity.
-        legal_name: Legal name of the related entity, or ``None`` if
-            the entity is referenced by an active relationship but
+        lei (str): 20-character LEI of the related entity.
+        legal_name (str | None): Legal name of the related entity, or ``None``
+            if the entity is referenced by an active relationship but
             does not have a corresponding row in ``lei_records``.
             This can happen when the Level 1 and Level 2 datasets
             are published at slightly different times.
-        relationship_type: GLEIF relationship type, e.g.
+        relationship_type (str): GLEIF relationship type, e.g.
             ``IS_DIRECTLY_CONSOLIDATED_BY`` or
             ``IS_INTERNATIONAL_BRANCH_OF``.
-        relationship_status: Status of the relationship record, e.g.
+        relationship_status (str): Status of the relationship record, e.g.
             ``ACTIVE`` (query helpers only return ``ACTIVE`` rows).
             Empty string if blank in the source CSV.
-        direction: Direction relative to the queried LEI - one of
+        direction (str): Direction relative to the queried LEI - one of
             ``"parent"``, ``"child"``, ``"sibling"``, or ``"other"``.
     """
 
@@ -113,13 +114,13 @@ class ReportingException:
     parent). Returned by :func:`gleif.queries.get_reporting_exceptions`.
 
     Attributes:
-        exception_category: Category of exception, e.g.
+        exception_category (str): Category of exception, e.g.
             ``ULTIMATE_ACCOUNTING_CONSOLIDATION_PARENT`` or
             ``DIRECT_ACCOUNTING_CONSOLIDATION_PARENT``.
-        exception_reason: Standardized reason code, e.g.
+        exception_reason (str | None): Standardized reason code, e.g.
             ``NO_KNOWN_PERSON``, ``NON_CONSOLIDATING``,
             ``LEGAL_OBSTACLES``.
-        exception_reference: Free-text reference supplied by the
+        exception_reference (str | None): Free-text reference supplied by the
             reporter, when present.
     """
 
@@ -136,19 +137,21 @@ class HierarchyNode:
     :func:`gleif.queries.get_descendant_tree`.
 
     Attributes:
-        lei: 20-character LEI of the node.
-        legal_name: Legal name, or ``None`` if the LEI is referenced
-            by relationship rows but is missing from ``lei_records``.
-        depth: 0 for the starting entity, 1 for its direct parent or
+        lei (str): 20-character LEI of the node.
+        legal_name (str | None): Legal name, or ``None`` if the LEI is
+            referenced by relationship rows but is missing from
+            ``lei_records``.
+        depth (int): 0 for the starting entity, 1 for its direct parent or
             child, and so on. Always non-negative.
-        entity_status: Entity status from the Level 1 record, when
-            available.
-        entity_category: Entity category from the Level 1 record.
-        legal_jurisdiction: Jurisdiction code from the Level 1 record.
-        relationship_type: Relationship type that connects this node
-            to its parent in the traversal (``None`` for the root
+        entity_status (str | None): Entity status from the Level 1 record,
+            when available.
+        entity_category (str | None): Entity category from the Level 1 record.
+        legal_jurisdiction (str | None): Jurisdiction code from the Level 1
+            record.
+        relationship_type (str | None): Relationship type that connects this
+            node to its parent in the traversal (``None`` for the root
             node at depth 0).
-        parent_lei: LEI of this node's parent in the traversal
+        parent_lei (str | None): LEI of this node's parent in the traversal
             (``None`` for the root node at depth 0).
     """
 
@@ -173,11 +176,11 @@ class CorporateGroup:
     ``HierarchyNode.parent_lei``.
 
     Attributes:
-        root: The ultimate parent of the corporate group.
-        descendants: Flat list of every entity in the group,
-            including the root at depth 0. Diamond structures are
+        root (EntityInfo): The ultimate parent of the corporate group.
+        descendants (list[HierarchyNode]): Flat list of every entity in the
+            group, including the root at depth 0. Diamond structures are
             deduplicated by keeping the shallowest occurrence.
-        total_entities: Total number of unique entities in the
+        total_entities (int): Total number of unique entities in the
             group, equal to ``len(descendants)``.
     """
 
@@ -205,17 +208,19 @@ class LEIRelationshipReport:
           be ``None`` and ``reporting_exceptions`` will be populated.
 
     Attributes:
-        entity: The queried entity.
-        direct_parent: Entity that directly consolidates the queried
-            entity, or ``None``.
-        ultimate_parent: Top-of-tree consolidating entity, or ``None``.
-        children: Entities that report the queried entity as a parent.
-        siblings: Entities sharing the same direct parent (excludes
-            the queried entity itself).
-        other_relationships: Non-consolidation relationships such as
-            international branch or fund relationships.
-        reporting_exceptions: Documented reasons the entity did not
-            report a parent relationship.
+        entity (EntityInfo): The queried entity.
+        direct_parent (EntityInfo | None): Entity that directly consolidates
+            the queried entity, or ``None``.
+        ultimate_parent (EntityInfo | None): Top-of-tree consolidating entity,
+            or ``None``.
+        children (list[RelatedEntity]): Entities that report the queried
+            entity as a parent.
+        siblings (list[RelatedEntity]): Entities sharing the same direct
+            parent (excludes the queried entity itself).
+        other_relationships (list[RelatedEntity]): Non-consolidation
+            relationships such as international branch or fund relationships.
+        reporting_exceptions (list[ReportingException]): Documented reasons
+            the entity did not report a parent relationship.
     """
 
     entity: EntityInfo

@@ -55,8 +55,9 @@ CLI tests use `typer.testing.CliRunner` with on-disk DuckDB files in `tmp_path`.
 | ----- | --------- |
 | Line coverage | 80% |
 | Branch coverage | 70% |
-| Critical paths | 90% |
-| New patches | 90% |
+
+The line-coverage gate is 80% (`fail_under` in `pyproject.toml`). Critical-path
+and new-patch percentages are review targets, not enforced gates.
 
 ## Linting and type checking
 
@@ -66,7 +67,7 @@ uv run ruff check --fix .       # Lint and auto-fix
 uv run basedpyright src         # Type check
 ```
 
-Ruff uses the PyStrict-aligned rule set at 88-character line length. BasedPyright runs in `standard` mode with strict inference for lists, dicts, and sets.
+Ruff uses the PyStrict-aligned rule set at 88-character line length. BasedPyright runs in `strict` mode with strict inference for lists, dicts, and sets.
 
 ## Pre-commit hooks
 
@@ -99,7 +100,8 @@ The `site/` output directory is gitignored.
 
 ## CI/CD
 
-Three GitHub Actions workflows run on every PR and push to `main`:
+Several GitHub Actions workflows run on each PR and push to `main`. The core
+quality and security gates:
 
 ### CI (`ci.yml`)
 
@@ -108,6 +110,14 @@ Three GitHub Actions workflows run on every PR and push to `main`:
 3. CI gate that blocks merge on any failure
 
 All action steps are pinned to commit SHAs.
+
+### Static Analysis (`static-analysis.yml`)
+
+Blocking gate for checks that otherwise ran only locally or advisory:
+
+1. `basedpyright` strict type checking
+2. `semgrep` security rules (`.semgrep.yaml`)
+3. `pip-audit` with the accepted-vulnerability suppressions applied
 
 ### Security (`security-analysis.yml`)
 

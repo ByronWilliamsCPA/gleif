@@ -31,6 +31,6 @@ jobs:
       actions: read
       contents: read
     with:
-      python-version: '3.11'
+      python-version: '3.12'
       python-queries: 'security-extended,security-and-quality'
       actions-queries: 'security-extended'

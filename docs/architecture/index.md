@@ -40,6 +40,9 @@ cli.py ──► Rich terminal output (panels, tables, trees)
 
 ## Key design decisions
 
+The decisions below are also captured as short [Architecture Decision
+Records](../adr/index.md), which record the alternatives considered.
+
 ### DuckDB as the local store
 
 The GLEIF golden copy datasets are large (Level 1 is ~2.3M rows with 338 columns). DuckDB's `read_csv()` function can bulk-load these files in seconds using parallel I/O. Queries run against the local file without any server process, which keeps the tool self-contained.

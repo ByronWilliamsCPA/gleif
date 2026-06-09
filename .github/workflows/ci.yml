@@ -33,10 +33,10 @@ jobs:
       checks: write
       pull-requests: write
     with:
-      python-version: '3.11'
+      python-version: '3.12'
       source-directory: src
       no-build: false
-      coverage-threshold: 65
+      coverage-threshold: 80
 
   ci-gate:
     name: CI Gate

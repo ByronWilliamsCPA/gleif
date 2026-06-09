@@ -82,16 +82,18 @@ repos:
         stages: [commit-msg]
 
   # Docstring argument linting
-  - repo: https://github.com/terrencepreilly/darglint
-    rev: abc26b768cd7135d848223ba53f68323593c33d5
+  - repo: https://github.com/jsh9/pydoclint
+    rev: 88d83c94156c5e51a09938e77019f2c58e92ab58  # 0.8.4  # pragma: allowlist secret
     hooks:
-      - id: darglint
-        args: ["-s", "google", "--strictness", "short"]
-        exclude: '^tests/'
+      - id: pydoclint
+        args: ["--config=pyproject.toml"]
+        types: [python]
+        stages: [pre-commit]
+        exclude: ^(tests|scripts|benchmarks|tools)/
 
   # Docstring coverage enforcement
   - repo: https://github.com/econchick/interrogate
-    rev: f35a9d68f609d6ceed10f4286efc8d73b79b17cb
+    rev: f35a9d68f609d6ceed10f4286efc8d73b79b17cb  # v1.7.0
     hooks:
       - id: interrogate
         args: ["-v", "--fail-under=80", "src/"]
