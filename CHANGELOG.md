@@ -20,18 +20,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   produced by `cyclonedx-py` inside the org `python-release.yml`).
   Downstream consumers expecting SPDX should switch to CycloneDX or
   generate SPDX out of band.
-
-### Added
-
-- Release workflow (`release.yml`): Sigstore keyless signing and SPDX SBOM
-  generation via `anchore/sbom-action` on tagged releases
-- OpenSSF Scorecard workflow (`scorecard.yml`) for continuous supply-chain
-  health scoring
-- `SECURITY.md`, `CONTRIBUTING.md` (OpenSSF required community files)
-- `CODEOWNERS`, darglint, and interrogate pre-commit hooks
-
-### Changed
-
 - GitHub Actions bumped to major versions: `actions/checkout` v4→v6,
   `actions/setup-python` v5→v6, `sigstore/cosign-installer` v3→v4,
   `actions/attest-build-provenance` v1→v4, `fsfe/reuse-action` v4→v6,
@@ -45,6 +33,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   workflow ref to replace mutable `@main` tag
 - `reusable-security-analysis.yml`: corrected `deny-license-types` parameter
   to `deny-licenses`; GPL-2.0 and GPL-3.0 blocking now active
+
+### Added
+
+- Qlty workflow (`qlty.yml`): a `qlty-gate` job that runs `qlty check` in diff
+  mode on pull requests and blocks merges introducing medium or higher severity
+  issues, plus a weekly `qlty-health` job (Mondays 07:00 UTC) that runs a
+  full-codebase scan in informational-only mode. Both delegate to the org-level
+  reusable `ByronWilliamsCPA/.github/.github/workflows/python-qlty-gate.yml`.
+- Release workflow (`release.yml`): Sigstore keyless signing and SPDX SBOM
+  generation via `anchore/sbom-action` on tagged releases
+- OpenSSF Scorecard workflow (`scorecard.yml`) for continuous supply-chain
+  health scoring
+- `SECURITY.md`, `CONTRIBUTING.md` (OpenSSF required community files)
+- `CODEOWNERS`, darglint, and interrogate pre-commit hooks
 
 ### Fixed
 
