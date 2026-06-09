@@ -12,29 +12,31 @@
         <meta name="author" content="Byron Williams">
       
       
-        <link rel="canonical" href="https://byronwilliamscpa.github.io/gleif/">
+        <link rel="canonical" href="https://byronwilliamscpa.github.io/gleif/adr/0001-duckdb-as-local-store/">
       
       
+        <link rel="prev" href="../">
       
-        <link rel="next" href="getting-started/">
+      
+        <link rel="next" href="../0002-async-download-sync-load/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>GLEIF CLI</title>
+        <title>0001 DuckDB as local store - GLEIF CLI</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +55,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#gleif-cli" class="md-skip">
+        <a href="#0001-duckdb-as-the-local-analytical-store" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +96,7 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="GLEIF CLI" class="md-header__button md-logo" aria-label="GLEIF CLI" data-md-component="logo">
+    <a href="../.." title="GLEIF CLI" class="md-header__button md-logo" aria-label="GLEIF CLI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,7 +116,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              0001 DuckDB as local store
             
           </span>
         </div>
@@ -219,11 +221,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="." class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -242,7 +242,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="getting-started/" class="md-tabs__link">
+      <a href="../../getting-started/" class="md-tabs__link">
         
   
   
@@ -261,7 +261,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="cli-reference/" class="md-tabs__link">
+      <a href="../../cli-reference/" class="md-tabs__link">
         
   
   
@@ -280,7 +280,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="troubleshooting/" class="md-tabs__link">
+      <a href="../../troubleshooting/" class="md-tabs__link">
         
   
   
@@ -297,11 +297,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../architecture/" class="md-tabs__link">
           
   
   
@@ -321,7 +323,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="development/" class="md-tabs__link">
+      <a href="../../development/" class="md-tabs__link">
         
   
   
@@ -342,7 +344,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="known-vulnerabilities/" class="md-tabs__link">
+        <a href="../../known-vulnerabilities/" class="md-tabs__link">
           
   
   
@@ -384,7 +386,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="GLEIF CLI" class="md-nav__button md-logo" aria-label="GLEIF CLI" data-md-component="logo">
+    <a href="../.." title="GLEIF CLI" class="md-nav__button md-logo" aria-label="GLEIF CLI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -411,37 +413,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -457,70 +432,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-it-does" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What it does
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#datasets" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Datasets
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick example
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#navigation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Navigation
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -532,7 +443,7 @@
   
   
     <li class="md-nav__item">
-      <a href="getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -559,7 +470,7 @@
   
   
     <li class="md-nav__item">
-      <a href="cli-reference/" class="md-nav__link">
+      <a href="../../cli-reference/" class="md-nav__link">
         
   
   
@@ -586,7 +497,7 @@
   
   
     <li class="md-nav__item">
-      <a href="troubleshooting/" class="md-nav__link">
+      <a href="../../troubleshooting/" class="md-nav__link">
         
   
   
@@ -610,6 +521,8 @@
       
   
   
+    
+  
   
   
     
@@ -627,20 +540,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="architecture/" class="md-nav__link ">
+            <a href="../../architecture/" class="md-nav__link ">
               
   
   
@@ -658,13 +574,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -684,7 +600,7 @@
   
   
     <li class="md-nav__item">
-      <a href="architecture/data-model/" class="md-nav__link">
+      <a href="../../architecture/data-model/" class="md-nav__link">
         
   
   
@@ -709,6 +625,8 @@
                 
   
   
+    
+  
   
   
     
@@ -730,18 +648,21 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="adr/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -759,13 +680,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5_3" id="__nav_5_3_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -782,10 +703,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="adr/0001-duckdb-as-local-store/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    0001 DuckDB as local store
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -801,6 +749,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives considered
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -813,7 +825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="adr/0002-async-download-sync-load/" class="md-nav__link">
+      <a href="../0002-async-download-sync-load/" class="md-nav__link">
         
   
   
@@ -841,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="adr/0003-frozen-dataclasses-as-return-types/" class="md-nav__link">
+      <a href="../0003-frozen-dataclasses-as-return-types/" class="md-nav__link">
         
   
   
@@ -884,7 +896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="development/" class="md-nav__link">
+      <a href="../../development/" class="md-nav__link">
         
   
   
@@ -969,7 +981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="known-vulnerabilities/" class="md-nav__link">
+      <a href="../../known-vulnerabilities/" class="md-nav__link">
         
   
   
@@ -997,7 +1009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="scanners/" class="md-nav__link">
+      <a href="../../scanners/" class="md-nav__link">
         
   
   
@@ -1052,10 +1064,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-it-does" class="md-nav__link">
+  <a href="#context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What it does
+        Context
       
     </span>
   </a>
@@ -1063,10 +1075,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#datasets" class="md-nav__link">
+  <a href="#decision" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Datasets
+        Decision
       
     </span>
   </a>
@@ -1074,10 +1086,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quick-example" class="md-nav__link">
+  <a href="#alternatives-considered" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quick example
+        Alternatives considered
       
     </span>
   </a>
@@ -1085,10 +1097,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#navigation" class="md-nav__link">
+  <a href="#consequences" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Navigation
+        Consequences
       
     </span>
   </a>
@@ -1115,97 +1127,33 @@
   
 
 
-<p><a href="https://github.com/ByronWilliamsCPA/gleif/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ByronWilliamsCPA/gleif/actions/workflows/ci.yml/badge.svg" /></a> <a href="https://qlty.sh/gh/ByronWilliamsCPA/projects/gleif"><img alt="Coverage" src="https://qlty.sh/badges/5c2ef323-6b73-4461-a1cf-e38e10ea4424/coverage.svg" /></a></p>
-<h1 id="gleif-cli">GLEIF CLI<a class="headerlink" href="#gleif-cli" title="Permanent link">&para;</a></h1>
-<p>A command-line tool for working with <a href="https://www.gleif.org/">GLEIF</a> (Global Legal Entity Identifier Foundation) golden copy datasets. It downloads the three public LEI datasets, loads them into a local <a href="https://duckdb.org/">DuckDB</a> database, and lets you query ownership hierarchies, search entities by name, and resolve ISINs.</p>
-<h2 id="what-it-does">What it does<a class="headerlink" href="#what-it-does" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Step</th>
-<th>Command</th>
-<th>What happens</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Download</td>
-<td><code>gleif download</code></td>
-<td>Fetches three GLEIF ZIP files from the golden copy API, extracts CSVs</td>
-</tr>
-<tr>
-<td>Load</td>
-<td><code>gleif load</code></td>
-<td>Bulk-loads the CSVs into DuckDB with column renaming</td>
-</tr>
-<tr>
-<td>Query</td>
-<td><code>gleif lei &lt;LEI&gt;</code></td>
-<td>Looks up parents, children, siblings, and reporting exceptions</td>
-</tr>
-<tr>
-<td>Search</td>
-<td><code>gleif name &lt;QUERY&gt;</code></td>
-<td>Case-insensitive substring search across 2M+ legal names</td>
-</tr>
-<tr>
-<td>Status</td>
-<td><code>gleif status</code></td>
-<td>Shows row counts and publish dates for loaded datasets</td>
-</tr>
-</tbody>
-</table>
-<h2 id="datasets">Datasets<a class="headerlink" href="#datasets" title="Permanent link">&para;</a></h2>
-<p>GLEIF publishes three "golden copy" datasets daily:</p>
-<table>
-<thead>
-<tr>
-<th>Level</th>
-<th>Dataset</th>
-<th>Contents</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Level 1</td>
-<td>LEI Records (<code>lei2</code>)</td>
-<td>~2.3M legal entities: names, addresses, jurisdictions, statuses</td>
-</tr>
-<tr>
-<td>Level 2</td>
-<td>Relationships (<code>rr</code>)</td>
-<td>Parent-child consolidation links between entities</td>
-</tr>
-<tr>
-<td>Level 2</td>
-<td>Reporting Exceptions (<code>repex</code>)</td>
-<td>Entities that cannot or do not report ownership relationships</td>
-</tr>
-</tbody>
-</table>
-<h2 id="quick-example">Quick example<a class="headerlink" href="#quick-example" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># First-time setup: download and load all datasets (~5 min)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>gleif<span class="w"> </span>refresh
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Look up Apple Inc.&#39;s global ultimate parent and subsidiaries</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>gleif<span class="w"> </span>lei<span class="w"> </span>HWUPKR0MPOU8FGXBT394
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Show the full corporate tree from any node</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>gleif<span class="w"> </span>lei<span class="w"> </span>HWUPKR0MPOU8FGXBT394<span class="w"> </span>--tree
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Search for entities with &quot;Deutsche Bank&quot; in their legal name</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>gleif<span class="w"> </span>name<span class="w"> </span><span class="s2">&quot;Deutsche Bank&quot;</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="c1"># Check how fresh your local data is</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>gleif<span class="w"> </span>status
-</span></code></pre></div>
-<h2 id="navigation">Navigation<a class="headerlink" href="#navigation" title="Permanent link">&para;</a></h2>
+<h1 id="0001-duckdb-as-the-local-analytical-store">0001. DuckDB as the local analytical store<a class="headerlink" href="#0001-duckdb-as-the-local-analytical-store" title="Permanent link">&para;</a></h1>
+<p>Status: accepted</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>The three GLEIF golden copy datasets total several GB uncompressed. The CLI
+needs to bulk-load CSVs, run recursive hierarchy queries (parent/child
+traversal), and substring name search, all on a single user machine with no
+server component.</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>Use DuckDB as the embedded store. It loads CSVs directly via <code>read_csv</code>, runs
+recursive CTEs for hierarchy traversal, supports parameterized queries (<code>$1</code>),
+and ships as a single file dependency with no separate process.</p>
+<h2 id="alternatives-considered">Alternatives considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="getting-started/">Getting Started</a>: installation, first run, freshness checks</li>
-<li><a href="cli-reference/">CLI Reference</a>: all commands, options, and exit codes</li>
-<li><a href="architecture/">Architecture</a>: data pipeline, module map, design decisions</li>
-<li><a href="architecture/data-model/">Data Model &amp; Schema</a>: DuckDB tables, column mappings, relationship conventions</li>
-<li><a href="development/">Development</a>: local setup, testing, linting, CI/CD</li>
+<li>SQLite: ubiquitous and embedded, but columnar analytical scans and recursive
+  CTE performance over millions of relationship rows are weaker, and <code>read_csv</code>
+  bulk import is less direct.</li>
+<li>PostgreSQL: strong analytical features, but requires a running server, which
+  contradicts the single-user, zero-setup CLI goal.</li>
+</ul>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<ul>
+<li>One file dependency, no server, fast bulk CSV load and analytical queries.</li>
+<li>Queries against a database that has not been loaded raise
+  <code>duckdb.CatalogException</code>; the query layer treats that as "no data".</li>
+<li>DuckDB does not bind SQL identifiers, so table and column names are
+  interpolated from internal constants (never user input); user values use
+  <code>$1</code>/<code>$2</code> binding.</li>
 </ul>
 
 
@@ -1266,10 +1214,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
