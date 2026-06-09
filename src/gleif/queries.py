@@ -90,13 +90,14 @@ def _rows_to_related(
     """Convert relationship rows to RelatedEntity dataclasses.
 
     Args:
-        rows: Tuples of ``(lei, legal_name, relationship_type,
-            relationship_status)``.
-        direction: Direction label stamped on each entity
+        rows (list[tuple[object, ...]]): Tuples of ``(lei, legal_name,
+            relationship_type, relationship_status)``.
+        direction (str): Direction label stamped on each entity
             (``"child"``, ``"sibling"``, or ``"other"``).
 
     Returns:
-        List of :class:`gleif.models.RelatedEntity`, one per row.
+        list[RelatedEntity]: List of :class:`gleif.models.RelatedEntity`,
+        one per row.
     """
     return [
         RelatedEntity(

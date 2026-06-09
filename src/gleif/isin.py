@@ -37,13 +37,13 @@ def _extract_isins(payload: Any) -> list[str]:
     """Pull the ISIN strings out of a GLEIF JSON:API response body.
 
     Args:
-        payload: Decoded JSON from an ``/isins`` response. Expected to
-            carry a top-level ``"data"`` array of objects with an
+        payload (Any): Decoded JSON from an ``/isins`` response. Expected
+            to carry a top-level ``"data"`` array of objects with an
             ``"attributes"`` dict containing an ``"isin"`` field.
 
     Returns:
-        List of ISIN strings; empty if ``data`` is absent or no entry
-        carries an ``isin``.
+        list[str]: List of ISIN strings; empty if ``data`` is absent or no
+        entry carries an ``isin``.
     """
     data = payload.get("data", [])
     return [
