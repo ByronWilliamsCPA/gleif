@@ -41,10 +41,10 @@ def fetch_isins(lei: str) -> list[str]:
     and treated as "no ISINs".
 
     Args:
-        lei: The 20-character LEI to look up.
+        lei (str): The 20-character LEI to look up.
 
     Returns:
-        List of ISIN strings. Empty list if the LEI has no
+        list[str]: List of ISIN strings. Empty list if the LEI has no
         associated ISINs, the LEI is unknown to GLEIF, or any HTTP
         error occurs.
     """
@@ -73,12 +73,12 @@ def fetch_isins_batch(leis: list[str]) -> dict[str, list[str]]:
     omitted from the result.
 
     Args:
-        leis: List of 20-character LEIs to look up.
+        leis (list[str]): List of 20-character LEIs to look up.
 
     Returns:
-        Mapping of LEI to list of ISINs. LEIs without any ISINs (or
-        for which the lookup failed) are not present as keys, so
-        ``result.get(lei, [])`` is the safe access pattern.
+        dict[str, list[str]]: Mapping of LEI to list of ISINs. LEIs without
+        any ISINs (or for which the lookup failed) are not present as keys,
+        so ``result.get(lei, [])`` is the safe access pattern.
     """
     results: dict[str, list[str]] = {}
     with httpx.Client(timeout=_REQUEST_TIMEOUT) as client:

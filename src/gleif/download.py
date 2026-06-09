@@ -57,12 +57,12 @@ class DownloadResult:
     :func:`gleif.db.load_all`.
 
     Attributes:
-        csv_path: Filesystem path to the extracted CSV.
-        publish_date: Value of the GLEIF ``x-gleif-publish-date``
+        csv_path (Path): Filesystem path to the extracted CSV.
+        publish_date (str): Value of the GLEIF ``x-gleif-publish-date``
             header for the downloaded archive (e.g. ``"2024-06-15"``)
             or ``"unknown"`` if the header was missing.
-        dataset_type: Which dataset this result corresponds to.
-        record_label: Human-readable label, e.g.
+        dataset_type (DatasetType): Which dataset this result corresponds to.
+        record_label (str): Human-readable label, e.g.
             ``"Level 1 - LEI Records"``.
     """
 
@@ -86,11 +86,11 @@ def read_local_publish_date(data_dir: Path, dataset_type: DatasetType) -> str | 
     needs the publish date but does not re-contact GLEIF).
 
     Args:
-        data_dir: Directory where downloaded data is stored.
-        dataset_type: Which dataset's marker to read.
+        data_dir (Path): Directory where downloaded data is stored.
+        dataset_type (DatasetType): Which dataset's marker to read.
 
     Returns:
-        The publish date string, or ``None`` if no marker exists
+        str | None: The publish date string, or ``None`` if no marker exists
         for this dataset (i.e. the dataset has never been
         downloaded into ``data_dir``).
     """
@@ -117,12 +117,12 @@ def find_extracted_csv(data_dir: Path, dataset_type: DatasetType) -> Path | None
     corresponds to the most recent publish.
 
     Args:
-        data_dir: Directory containing extracted CSVs.
-        dataset_type: Which dataset to look up.
+        data_dir (Path): Directory containing extracted CSVs.
+        dataset_type (DatasetType): Which dataset to look up.
 
     Returns:
-        Path to the most recent CSV, or ``None`` if none is present
-        in ``data_dir``.
+        Path | None: Path to the most recent CSV, or ``None`` if none is
+        present in ``data_dir``.
     """
     pattern = f"*-gleif-goldencopy-{dataset_type.value}-*"
     csvs = sorted(data_dir.glob(pattern))
@@ -160,18 +160,18 @@ async def download_dataset(
     archive structure is unexpected.
 
     Args:
-        dataset_type: Which dataset to download.
-        data_dir: Directory to store the downloaded ZIP and the
+        dataset_type (DatasetType): Which dataset to download.
+        data_dir (Path): Directory to store the downloaded ZIP and the
             extracted CSV. Created if it does not exist.
-        force: If ``True``, re-download even when the local CSV is
+        force (bool): If ``True``, re-download even when the local CSV is
             already current.
-        progress: Optional Rich ``Progress`` instance for visual
-            progress reporting. When supplied, a task is added per
+        progress (Progress | None): Optional Rich ``Progress`` instance for
+            visual progress reporting. When supplied, a task is added per
             dataset and updated as bytes arrive.
 
     Returns:
-        DownloadResult with the path to the extracted CSV and the
-        remote publish date.
+        DownloadResult: The path to the extracted CSV and the remote
+        publish date.
     """
     data_dir.mkdir(parents=True, exist_ok=True)
     url = DATASET_URLS[dataset_type]
@@ -247,11 +247,11 @@ def _extract_zip(zip_path: Path, extract_dir: Path) -> Path:
     from the standard library.
 
     Args:
-        zip_path: Path to the ZIP file.
-        extract_dir: Directory to extract into.
+        zip_path (Path): Path to the ZIP file.
+        extract_dir (Path): Directory to extract into.
 
     Returns:
-        Path to the extracted CSV file.
+        Path: Path to the extracted CSV file.
 
     Raises:
         ValueError: If no CSV is present in the archive, or if the
@@ -291,14 +291,15 @@ async def download_all(
     re-raises the first error and cancels the remaining tasks.
 
     Args:
-        data_dir: Directory to store downloaded ZIPs and extracted
+        data_dir (Path): Directory to store downloaded ZIPs and extracted
             CSVs. Created if it does not exist.
-        force: If ``True``, re-download every dataset even when the
+        force (bool): If ``True``, re-download every dataset even when the
             local copy is already current.
 
     Returns:
-        A list of :class:`DownloadResult`, one per dataset, in the
-        order defined by :class:`gleif.constants.DatasetType`.
+        list[DownloadResult]: A list of :class:`DownloadResult`, one per
+        dataset, in the order defined by
+        :class:`gleif.constants.DatasetType`.
     """
     progress = Progress(
         TextColumn("[bold blue]{task.description}"),

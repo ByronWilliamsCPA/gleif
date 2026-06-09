@@ -1,0 +1,17 @@
+version: 2
+# Detection-only: Renovate opens all dependency PRs. open-pull-requests-limit: 0
+# suppresses Dependabot version-update PRs only; security-update PRs are governed
+# by the repo-level Dependabot security updates setting (currently off), not here.
+# Dependabot alerts (a repo setting) remain the multi-ecosystem detection ledger.
+# Refs: standards CI-021 (amended), CI-074.
+updates:
+  - package-ecosystem: "uv"             # Python: uv-managed (pyproject.toml + uv.lock)
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+  - package-ecosystem: "github-actions" # .github/workflows/ present
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0

@@ -82,11 +82,11 @@ def get_connection(db_path: Path) -> duckdb.DuckDBPyConnection:
     etc.).
 
     Args:
-        db_path: Filesystem path to the DuckDB database file. If the
+        db_path (Path): Filesystem path to the DuckDB database file. If the
             file does not yet exist, DuckDB will create an empty one.
 
     Returns:
-        An open ``duckdb.DuckDBPyConnection``.
+        duckdb.DuckDBPyConnection: An open connection to the database file.
     """
     db_path.parent.mkdir(parents=True, exist_ok=True)
     return duckdb.connect(str(db_path))
@@ -199,7 +199,7 @@ def create_schema(con: duckdb.DuckDBPyConnection) -> None:
     needs to create the auxiliary tracking table.
 
     Args:
-        con: Open DuckDB connection.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
     """
     con.execute(_LOAD_METADATA_DDL)
 
@@ -214,7 +214,7 @@ def create_indexes(con: duckdb.DuckDBPyConnection) -> None:
     than maintaining them during the insert.
 
     Args:
-        con: Open DuckDB connection.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
     """
     for stmt in _INDEXES:
         con.execute(stmt)
@@ -229,10 +229,12 @@ def _build_select_clause(column_map: dict[str, str]) -> str:
     """Build a SQL SELECT clause that renames CSV columns.
 
     Args:
-        column_map: Mapping from CSV header name to desired DB column name.
+        column_map (dict[str, str]): Mapping from CSV header name to desired
+            DB column name.
 
     Returns:
-        Comma-separated SELECT fragments quoting each source column and aliasing it.
+        str: Comma-separated SELECT fragments quoting each source column and
+        aliasing it.
     """
     parts = [f'"{csv_col}" AS {db_col}' for csv_col, db_col in column_map.items()]
     return ", ".join(parts)
@@ -258,16 +260,16 @@ def _load_csv_into_table(
     do not break type inference; downstream queries cast as needed.
 
     Args:
-        con: Open DuckDB connection.
-        table: Target table name. Source-controlled via the internal
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
+        table (str): Target table name. Source-controlled via the internal
             ``load_*`` wrappers; everything user-supplied flows through
             ``column_map`` and ``csv_path``.
-        csv_path: Path to the extracted CSV file.
-        column_map: Mapping from CSV header name to DB column name; passed
-            through :func:`_build_select_clause`.
+        csv_path (Path): Path to the extracted CSV file.
+        column_map (dict[str, str]): Mapping from CSV header name to DB
+            column name; passed through :func:`_build_select_clause`.
 
     Returns:
-        Number of rows loaded into ``table``.
+        int: Number of rows loaded into ``table``.
     """
     select_clause = _build_select_clause(column_map)
     # The file path is passed via DuckDB parameter binding ($1) so paths
@@ -306,11 +308,11 @@ def load_lei_records(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     :data:`gleif.constants.LEI_CORE_COLUMNS`.
 
     Args:
-        con: Open DuckDB connection.
-        csv_path: Path to the extracted Level 1 CSV file.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
+        csv_path (Path): Path to the extracted Level 1 CSV file.
 
     Returns:
-        Number of rows loaded into ``lei_records``.
+        int: Number of rows loaded into ``lei_records``.
     """
     return _load_csv_into_table(
         con,
@@ -330,11 +332,11 @@ def load_relationships(con: duckdb.DuckDBPyConnection, csv_path: Path) -> int:
     ``duckdb.InvalidInputException`` if required columns are missing.
 
     Args:
-        con: Open DuckDB connection.
-        csv_path: Path to the extracted Level 2 RR CSV file.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
+        csv_path (Path): Path to the extracted Level 2 RR CSV file.
 
     Returns:
-        Number of rows loaded into ``relationships``.
+        int: Number of rows loaded into ``relationships``.
     """
     return _load_csv_into_table(
         con,
@@ -353,11 +355,11 @@ def load_reporting_exceptions(con: duckdb.DuckDBPyConnection, csv_path: Path) ->
     are missing.
 
     Args:
-        con: Open DuckDB connection.
-        csv_path: Path to the extracted Level 2 exceptions CSV file.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
+        csv_path (Path): Path to the extracted Level 2 exceptions CSV file.
 
     Returns:
-        Number of rows loaded into ``reporting_exceptions``.
+        int: Number of rows loaded into ``reporting_exceptions``.
     """
     return _load_csv_into_table(
         con,
@@ -376,10 +378,10 @@ def update_metadata(
     """Insert or update the ``load_metadata`` row for a dataset.
 
     Args:
-        con: Open DuckDB connection.
-        dataset_type: Which dataset was loaded.
-        publish_date: GLEIF publish date for the loaded CSV.
-        record_count: Number of rows loaded.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
+        dataset_type (DatasetType): Which dataset was loaded.
+        publish_date (str): GLEIF publish date for the loaded CSV.
+        record_count (int): Number of rows loaded.
     """
     con.execute(
         """
@@ -411,13 +413,14 @@ def load_all(
     file cannot be read.
 
     Args:
-        con: Open DuckDB connection.
-        download_results: List of :class:`DownloadResult` from the
-            download phase. Order does not matter; the function
-            dispatches by ``dataset_type``.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
+        download_results (list[DownloadResult]): List of
+            :class:`DownloadResult` from the download phase. Order does
+            not matter; the function dispatches by ``dataset_type``.
 
     Returns:
-        Mapping of dataset type to number of rows loaded.
+        dict[DatasetType, int]: Mapping of dataset type to number of rows
+        loaded.
     """
     create_schema(con)
 
@@ -454,13 +457,14 @@ def get_status(
     command renders this as a Rich table.
 
     Args:
-        con: Open DuckDB connection.
+        con (duckdb.DuckDBPyConnection): Open DuckDB connection.
 
     Returns:
-        List of ``(dataset_type, publish_date, loaded_at,
-        record_count)`` tuples, ordered by dataset type. Returns an
-        empty list if the ``load_metadata`` table does not exist
-        (i.e. no data has ever been loaded into this database).
+        list[tuple[str, str, str, int]]: List of ``(dataset_type,
+        publish_date, loaded_at, record_count)`` tuples, ordered by
+        dataset type. Returns an empty list if the ``load_metadata``
+        table does not exist (i.e. no data has ever been loaded into
+        this database).
     """
     try:
         rows = con.execute(
