@@ -154,4 +154,12 @@ class TestRenderTree:
         )
         render_tree(group)
         out = capsys.readouterr().out
-        assert "see above" in out
+        # SHARED is reachable via both A and B. It must render once in full
+        # under the first branch and exactly once as a "see above" repeat
+        # under the second, never twice as a repeat nor zero times. Asserting
+        # the count (not mere presence) catches a dedup bug that marked the
+        # wrong copy, both copies, or no copy.
+        assert out.count("see above") == 1
+        assert "A Co" in out
+        assert "B Co" in out
+        assert "Shared" in out

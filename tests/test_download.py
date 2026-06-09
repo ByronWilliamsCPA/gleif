@@ -8,6 +8,7 @@ import zipfile
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 
 from gleif.constants import DatasetType
@@ -160,14 +161,52 @@ class TestDownloadDataset:
     def test_rejects_path_traversal_member(
         self, mock_client_cls: MagicMock, tmp_path: Path
     ) -> None:
-        data_dir = tmp_path / "downloads"
-        data_dir.mkdir()
+        # Extract straight into tmp_path (not a subdir) so the guard is shown
+        # to trip on the member name alone: ``../escape.csv`` resolves to
+        # tmp_path's parent regardless of how deep tmp_path itself sits.
         client = _fake_client(
             publish_date="2024-09-01", chunks=[_zip_bytes("../escape.csv")]
         )
         _patch_async_client(mock_client_cls, client)
         with pytest.raises(ValueError, match="Path traversal"):
-            asyncio.run(download_dataset(DatasetType.LEI, data_dir, force=True))
+            asyncio.run(download_dataset(DatasetType.LEI, tmp_path, force=True))
+        # The escaping member must not be written outside the extract dir.
+        assert not (tmp_path.parent / "escape.csv").exists()
+
+    @patch("gleif.download.httpx.AsyncClient")
+    def test_propagates_http_status_error(
+        self, mock_client_cls: MagicMock, tmp_path: Path
+    ) -> None:
+        # download_dataset documents that httpx.HTTPStatusError propagates
+        # (e.g. a 404 if the dataset URL changes). The HEAD raise_for_status
+        # is the first place it can surface; assert it is not swallowed.
+        request = httpx.Request("HEAD", "https://example.test/lei2")
+        head_resp = MagicMock()
+        head_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "404 Not Found",
+            request=request,
+            response=httpx.Response(404, request=request),
+        )
+        client = MagicMock()
+        client.head = AsyncMock(return_value=head_resp)
+        _patch_async_client(mock_client_cls, client)
+        with pytest.raises(httpx.HTTPStatusError):
+            asyncio.run(download_dataset(DatasetType.LEI, tmp_path, force=True))
+        client.stream.assert_not_called()
+
+    @patch("gleif.download.httpx.AsyncClient")
+    def test_propagates_bad_zip_file(
+        self, mock_client_cls: MagicMock, tmp_path: Path
+    ) -> None:
+        # download_dataset documents that zipfile.BadZipFile propagates when
+        # the streamed archive is not a valid ZIP. Feed non-ZIP bytes and
+        # confirm the error is raised rather than caught and hidden.
+        client = _fake_client(
+            publish_date="2024-09-01", chunks=[b"this is not a zip archive"]
+        )
+        _patch_async_client(mock_client_cls, client)
+        with pytest.raises(zipfile.BadZipFile):
+            asyncio.run(download_dataset(DatasetType.LEI, tmp_path, force=True))
 
 
 class TestDownloadAll:
@@ -188,3 +227,10 @@ class TestDownloadAll:
         ]
         results = asyncio.run(download_all(tmp_path))
         assert [r.dataset_type for r in results] == list(DatasetType)
+        # download_all must schedule exactly one download_dataset per dataset
+        # type, each receiving the shared data_dir; assert the orchestration
+        # rather than only the gather ordering.
+        assert mock_download.call_count == len(list(DatasetType))
+        for call in mock_download.call_args_list:
+            assert call.args[0] in DatasetType
+            assert call.args[1] == tmp_path
