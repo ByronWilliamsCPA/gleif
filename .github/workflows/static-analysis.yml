@@ -80,5 +80,7 @@ jobs:
 
       - name: Secret scan (detect-secrets)
         # Blocking check so the baseline is enforced in CI, not only via the
-        # contributor pre-commit hook.
-        run: uv run detect-secrets-hook --baseline .secrets.baseline $(git ls-files)
+        # contributor pre-commit hook. NUL-delimit the file list so paths with
+        # spaces or globs are not word-split, and so a large tree does not blow
+        # the ARG_MAX limit of a single argv.
+        run: git ls-files -z | xargs -0 uv run detect-secrets-hook --baseline .secrets.baseline
