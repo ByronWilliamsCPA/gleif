@@ -11,6 +11,7 @@ One latent staleness: a `# noqa` directive guarding a Ruff preview rule the proj
 ## Findings
 
 ### LEG-01: Stale `noqa` for non-enabled preview rule PLC0415
+
 - Severity: Low
 - Effort: S (<1day)
 - Files: `src/gleif/cli.py:105`

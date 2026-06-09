@@ -11,6 +11,7 @@ Two real findings: the `[tool.pip-audit]` ignore block in `pyproject.toml` is **
 ## Findings
 
 ### SEC-01 pip-audit pyproject ignore-vuln block is silently not honored by the CLI
+
 Severity: High. Effort: S.
 Files: `pyproject.toml:99-109`, `docs/known-vulnerabilities.md`.
 Evidence: `uv run pip-audit` returns exit 1 and reports `py 1.11.0 PYSEC-2022-42969` despite that ID being listed in `[tool.pip-audit] ignore-vuln`. pip-audit does not read `[tool.pip-audit]` from pyproject; only the `--ignore-vuln` CLI flag works: `uv run pip-audit --ignore-vuln PYSEC-2022-42969` returns exit 0, "1 ignored". So the documented suppressions (PYSEC-2022-42969, PYSEC-2026-89) take effect only if every invocation passes the flags. `security-analysis.yml` comments claim "pip-audit ... honors [tool.pip-audit] ignore-vuln" (lines ~40-42), which is false; the actual call lives in the org-level `python-ci.yml` (not in this repo) and cannot be verified here.
@@ -18,12 +19,14 @@ Recommendation: pass `--ignore-vuln PYSEC-2022-42969 --ignore-vuln PYSEC-2026-89
 CVE: PYSEC-2022-42969 (fix: none; py unmaintained), PYSEC-2026-89.
 
 ### SEC-02 detect-secrets not in dependency set; baseline cannot be re-verified
+
 Severity: Medium. Effort: S.
 Files: `pyproject.toml` (dev deps), `.secrets.baseline`, `.pre-commit-config.yaml:64-70`.
 Evidence: `uv run detect-secrets scan` fails ("Failed to spawn"); `uv run python -m detect_secrets` -> `No module named detect_secrets`. detect-secrets appears nowhere in `pyproject.toml`. It runs only via the pre-commit hook (pinned `01886c8a...` v1.5.0), so the baseline is enforced only when contributors have pre-commit installed; there is no `uv run` path and no CI job in this repo that runs it. Baseline cross-check against a fresh scan was therefore not possible in this environment.
 Recommendation: add detect-secrets to the dev dependency group so `uv run detect-secrets scan --baseline .secrets.baseline` works locally and in CI; add a CI step that runs it (do not rely on contributor pre-commit alone).
 
 ### SEC-03 detect-secrets baseline content is stale-resistant but unverifiable here (informational)
+
 Severity: Low. Effort: S.
 Files: `.secrets.baseline:129-195`, `.pre-commit-config.yaml`.
 Evidence: All 9 baseline entries are `Hex High Entropy String` in `.pre-commit-config.yaml` at lines 12,32,40,47,53,72,79,86,94 - these correspond to the action `rev:` SHA pins (e.g. ruff `740a8f85...`, bandit `f3a18ab3...`), i.e. false positives correctly baselined, not live secrets. Line numbers in the current `.pre-commit-config.yaml` still hold SHA pins, so no obvious drift. Could not run a fresh scan to confirm no new live secrets exist outside this file (see SEC-02). `generated_at` 2026-04-27; file has changed since (renovate/trufflehog hooks added) so a regen is due.

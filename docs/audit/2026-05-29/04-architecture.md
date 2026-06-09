@@ -22,6 +22,7 @@ stale example (RAD doc) that will mislead.
 ## Findings
 
 ### ARCH-01 - Persistence layer writes terminal output
+
 Severity: Medium. Effort: S.
 Files: `db.py:54,68,433-443`.
 `db.py` imports `rich.console.Console`, instantiates its own `console = Console()`
@@ -36,6 +37,7 @@ Recommendation: have `load_all` take an optional progress/callback or return per
 counts, and let `cli.py` render. At minimum, route through the single `rendering.console`.
 
 ### ARCH-02 - `'ACTIVE'` relationship status hardcoded in 6 SQL bodies
+
 Severity: Low. Effort: S.
 Files: `queries.py:138,177,222,226,280,404,467`.
 Every traversal query inlines `r.relationship_status = 'ACTIVE'`. `constants.py` already
@@ -46,6 +48,7 @@ change touches seven call sites. Recommendation: add `ACTIVE_STATUS = "ACTIVE"` 
 constants.py and reference it (string-build or bind as a parameter).
 
 ### ARCH-03 - ISIN endpoint URL lives outside constants.py
+
 Severity: Low. Effort: S.
 Files: `isin.py:32`, `constants.py:21`.
 `GLEIF_API_BASE = "https://api.gleif.org/api/v1/lei-records"` is defined in `isin.py`, while
@@ -56,6 +59,7 @@ dependency surface visible in one file. Recommendation: move `GLEIF_API_BASE` (a
 `_REQUEST_TIMEOUT`, see ARCH-04) into constants.py.
 
 ### ARCH-04 - Network magic numbers inline
+
 Severity: Low. Effort: S.
 Files: `download.py:180,215`, `cli.py:186`.
 `timeout=600.0` (download.py:180) and `chunk_size=65536` (download.py:215) are unnamed
@@ -67,6 +71,7 @@ chunk size as module constants (or in constants.py); promote LEI length to a sha
 since the 20-char rule is a domain invariant referenced in several docstrings.
 
 ### ARCH-05 - `# noqa` present despite documented ban
+
 Severity: Low. Effort: S.
 Files: `cli.py:105`, `AGENTS.md:77`, `.github/copilot-instructions.md:30-31`.
 AGENTS.md:77 states "No `# noqa`, `# type: ignore`, or CI bypass flags; fix the actual
@@ -81,6 +86,7 @@ amend AGENTS.md to carve out an explicit exception. Right now the code contradic
 rule.
 
 ### ARCH-06 - RAD doc example contradicts actual code conventions
+
 Severity: Low. Effort: S.
 Files: `docs/response-aware-development.md:37-48`.
 The "real-world" code sample uses `conn.execute("... WHERE lei = ?", [lei])` with `?`

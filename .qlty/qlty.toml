@@ -143,3 +143,12 @@ set.ignored = true
 match.rules = ["markdownlint:MD046"]
 match.file_patterns = ["docs/**"]
 set.ignored = true
+
+# Table column style (pipe spacing). The repo's pinned pre-commit linter
+# (markdownlint-cli v0.38.0) predates MD060, so the project never adopted a
+# single table-pipe-spacing style and uses compact tables in the audit and
+# internal reports. qlty bundles a newer markdownlint that added MD060; this
+# triage mirrors the MD060: false in .markdownlint.yaml so both linters agree.
+[[triage]]
+match.rules = ["markdownlint:MD060"]
+set.ignored = true
