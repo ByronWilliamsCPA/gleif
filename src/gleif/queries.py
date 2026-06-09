@@ -56,7 +56,7 @@ def _row_to_entity(row: tuple[object, ...]) -> EntityInfo:
             legal_address_country, hq_address_city, hq_address_country.
 
     Returns:
-        EntityInfo: EntityInfo populated from the row values.
+        EntityInfo: Populated from the row values.
     """
     return EntityInfo(
         lei=str(row[0]),
@@ -341,7 +341,7 @@ def _row_to_hierarchy_node(row: tuple[object, ...]) -> HierarchyNode:
             via_type, depth, parent_lei.
 
     Returns:
-        HierarchyNode: HierarchyNode populated from the row values.
+        HierarchyNode: Populated from the row values.
     """
     return HierarchyNode(
         lei=str(row[0]),

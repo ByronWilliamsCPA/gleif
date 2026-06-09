@@ -170,8 +170,8 @@ async def download_dataset(
             dataset and updated as bytes arrive.
 
     Returns:
-        DownloadResult: DownloadResult with the path to the extracted CSV and
-        the remote publish date.
+        DownloadResult: The path to the extracted CSV and the remote
+        publish date.
     """
     data_dir.mkdir(parents=True, exist_ok=True)
     url = DATASET_URLS[dataset_type]

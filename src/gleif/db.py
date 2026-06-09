@@ -86,7 +86,7 @@ def get_connection(db_path: Path) -> duckdb.DuckDBPyConnection:
             file does not yet exist, DuckDB will create an empty one.
 
     Returns:
-        duckdb.DuckDBPyConnection: An open ``duckdb.DuckDBPyConnection``.
+        duckdb.DuckDBPyConnection: An open connection to the database file.
     """
     db_path.parent.mkdir(parents=True, exist_ok=True)
     return duckdb.connect(str(db_path))
