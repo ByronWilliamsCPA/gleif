@@ -28,7 +28,7 @@ jobs:
   security:
     name: Security Analysis
     # yamllint disable rule:line-length
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@6f71aecae2c91214ca0a0a2206a36cf912aa31ac # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@987d517d3c8e4b180f4dd15de6d9575f0df91182 # main
     # yamllint enable rule:line-length
     permissions:
       contents: read
