@@ -2,7 +2,11 @@
 #
 # Thin caller for the org-level python-security-analysis.yml reusable workflow,
 # which centralizes dependency review, Bandit, OSV, and related scans. CodeQL
-# is disabled here because the dedicated codeql.yml workflow already runs it.
+# is disabled here (run-codeql: false, below); GitHub now bills Advanced
+# Security (Code Security), so CodeQL no longer functions fleet-wide. The
+# dedicated codeql.yml/reusable-codeql.yml workflows that used to cover this
+# were removed. Leaving run-codeql: false as-is; a follow-up removes the
+# input line once the shared reusable workflow drops the option.
 
 name: Security Analysis
 
@@ -39,7 +43,8 @@ jobs:
       python-version: '3.12'
       source-directory: src
       no-build: false
-      # CodeQL is handled by the dedicated codeql.yml workflow.
+      # CodeQL is removed fleet-wide (GitHub now bills Advanced Security);
+      # the dedicated codeql.yml/reusable-codeql.yml workflows are gone.
       # OSV is redundant with pip-audit. pip-audit's accepted-vulnerability
       # suppressions (docs/known-vulnerabilities.md) are applied as explicit
       # --ignore-vuln flags in static-analysis.yml; pip-audit's CLI does not

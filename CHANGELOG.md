@@ -32,8 +32,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   migrated from local reusable workflows to org-level reusables in
   `ByronWilliamsCPA/.github`, pinned to SHA
   `4e0fd54428d6745b04e2316f85d585109d7db02b` (closes #28). Local
-  `reusable-codeql.yml` is retained because the org repo does not publish a
-  `python-codeql.yml` equivalent.
+  `reusable-codeql.yml` was retained at the time because the org repo did not
+  publish a `python-codeql.yml` equivalent; it has since been removed (see
+  Removed, below).
 - Release SBOM format changes from SPDX-JSON (`gleif-sbom.spdx.json`,
   produced by `anchore/sbom-action`) to CycloneDX-JSON (`dist/sbom.json`,
   produced by `cyclonedx-py` inside the org `python-release.yml`).
@@ -52,6 +53,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   workflow ref to replace mutable `@main` tag
 - `reusable-security-analysis.yml`: corrected `deny-license-types` parameter
   to `deny-licenses`; GPL-2.0 and GPL-3.0 blocking now active
+
+### Removed
+
+- `.github/workflows/codeql.yml`, `.github/workflows/reusable-codeql.yml`,
+  and `.github/workflows/dependency-review.yml`. GitHub now bills Advanced
+  Security (Code Security), so CodeQL code scanning and the
+  `dependency-review-action` no longer function. Bandit, pip-audit, semgrep,
+  and detect-secrets (`static-analysis.yml`) continue to run and are
+  unaffected. `security-analysis.yml`'s `run-codeql: false` input to the org
+  reusable workflow is left in place for a coordinated follow-up.
 
 ### Added
 
