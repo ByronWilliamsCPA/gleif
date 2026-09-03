@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1105,9 +1105,9 @@ signal they must satisfy and maintainers avoid duplicate ownership.</p>
 </tr>
 <tr>
 <td>SAST (code patterns)</td>
-<td>CodeQL security-extended</td>
-<td><code>codeql.yml</code> (blocking)</td>
-<td>semgrep (Qlty, advisory)</td>
+<td>none (removed; see Notes)</td>
+<td>n/a</td>
+<td>semgrep <code>.semgrep.yaml</code> (blocking, custom rules only; see row below), bandit (see row below), Qlty semgrep (advisory)</td>
 </tr>
 <tr>
 <td>Custom SQL / injection rules</td>
@@ -1125,7 +1125,7 @@ signal they must satisfy and maintainers avoid duplicate ownership.</p>
 <td>Dependency vulnerabilities</td>
 <td>pip-audit</td>
 <td><code>static-analysis.yml</code> (blocking)</td>
-<td>Trivy (SBOM), dependency-review, Renovate alerts</td>
+<td>Trivy (SBOM), Renovate alerts</td>
 </tr>
 <tr>
 <td>Secrets</td>
@@ -1143,6 +1143,13 @@ signal they must satisfy and maintainers avoid duplicate ownership.</p>
 </table>
 <h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
 <ul>
+<li>CodeQL (<code>codeql.yml</code>, <code>reusable-codeql.yml</code>) and GitHub's
+  <code>dependency-review-action</code> (<code>dependency-review.yml</code>) were removed: GitHub
+  now bills Advanced Security (Code Security), so CodeQL code scanning and
+  the dependency-review action no longer function on this repo. See
+  <code>CHANGELOG.md</code> for the removal entry. No SARIF-only scanner lost its only
+  output as a result; neither workflow fed a downstream consumer other than
+  the (now-defunct) Security tab.</li>
 <li>bandit was removed from Qlty (<code>qlty.toml</code>) so it has one advisory home
   (pre-commit) and one blocking home (the org security workflow), not three.</li>
 <li>OSV scanning is disabled in <code>security-analysis.yml</code> because pip-audit covers
@@ -1217,7 +1224,7 @@ signal they must satisfy and maintainers avoid duplicate ownership.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

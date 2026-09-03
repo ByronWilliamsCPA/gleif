@@ -2,54 +2,54 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/cli-reference/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/development/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/getting-started/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/known-vulnerabilities/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/scanners/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/troubleshooting/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/adr/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/adr/0001-duckdb-as-local-store/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/adr/0002-async-download-sync-load/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/adr/0003-frozen-dataclasses-as-return-types/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/architecture/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
     <url>
          <loc>https://byronwilliamscpa.github.io/gleif/architecture/data-model/</loc>
-         <lastmod>2026-06-09</lastmod>
+         <lastmod>2026-09-03</lastmod>
     </url>
 </urlset>

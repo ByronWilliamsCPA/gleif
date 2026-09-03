@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1187,7 +1187,7 @@
 <h2 id="duckdb-file-locked">DuckDB file locked<a class="headerlink" href="#duckdb-file-locked" title="Permanent link">&para;</a></h2>
 <p><strong>Symptom:</strong> The command fails immediately with an error similar to:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>duckdb.duckdb.IOException: Could not set lock on file
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>&quot;~/.local/share/gleif/gleif.duckdb&quot;: Conflicting lock is held
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>"~/.local/share/gleif/gleif.duckdb": Conflicting lock is held
 </span></code></pre></div>
 <p><strong>Cause:</strong> DuckDB allows only one writer connection at a time. If a previous
 <code>gleif</code> command was interrupted without closing cleanly, or if another process
@@ -1236,7 +1236,7 @@ connection. On typical broadband (4-5 MB/s), all three datasets take
 <h2 id="csv-not-found-load-before-download">CSV not found (load before download)<a class="headerlink" href="#csv-not-found-load-before-download" title="Permanent link">&para;</a></h2>
 <p><strong>Symptom:</strong> Running <code>gleif load</code> without having downloaded the data first
 produces an error and exits with code 1:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>No extracted CSV found for Level 1 - LEI Records. Run &#39;gleif download&#39; first.
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>No extracted CSV found for Level 1 - LEI Records. Run 'gleif download' first.
 </span></code></pre></div>
 <p><strong>Cause:</strong> <code>gleif load</code> expects the extracted CSVs to already exist in the
 data directory. It does not download them.</p>
@@ -1338,7 +1338,7 @@ after midnight UTC.</p>
 <p>The behavior differs depending on which command you run:</p>
 <p><strong><code>gleif status</code> on a missing database:</strong> The command checks whether the
 database file exists and exits immediately with:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>Database not found at &lt;path&gt;. Run &#39;gleif refresh&#39; first.
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>Database not found at &lt;path&gt;. Run 'gleif refresh' first.
 </span></code></pre></div>
 <p><strong><code>gleif lei</code> / <code>gleif name</code> on a missing or empty database:</strong> These commands
 do not check for the database file before connecting. <code>duckdb.connect()</code>
@@ -1412,7 +1412,7 @@ returns an empty results list.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
