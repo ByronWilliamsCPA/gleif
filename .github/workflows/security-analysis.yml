@@ -46,3 +46,40 @@ jobs:
       # read [tool.pip-audit] from pyproject.toml.
       run-codeql: false
       run-osv: false
+
+  security-gate-validation:
+    # `security` above has `uses:`, so it is a reusable-workflow caller job.
+    # A caller job's status-check context is always
+    # "<this job's name> / <inner job name>", unconditionally; it can never
+    # emit a bare context, even though the callee itself has its own
+    # internal job named "Security Gate Validation" (python-security-
+    # analysis.yml's security-gate job). That internal job's context here is
+    # "Security Analysis / Security Gate Validation", which never matches
+    # the org ruleset's required bare context "Security Gate Validation".
+    # This normal job (no uses:) exists solely to emit that bare context.
+    # #CRITICAL: do not remove this job or give it a uses:; either change
+    # would stop the required check from ever reporting, leaving every PR
+    # BLOCKED as "Expected" forever. #VERIFY against the org ruleset's
+    # required_status_checks before touching this job again.
+    name: Security Gate Validation
+    runs-on: ubuntu-latest
+    needs: [security]
+    if: always()
+    permissions:
+      contents: read
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check security scan results
+        env:
+          SECURITY_RESULT: ${{ needs.security.result }}
+        run: |
+          if [ "$SECURITY_RESULT" = "success" ] || [ "$SECURITY_RESULT" = "skipped" ]; then
+            echo "Security Gate passed"
+          else
+            echo "Security Gate failed: $SECURITY_RESULT"
+            exit 1
+          fi
