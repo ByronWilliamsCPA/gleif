@@ -7,6 +7,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Fixed
+
+- `security-analysis.yml`: added a `security-gate-validation` job that emits
+  the bare `Security Gate Validation` status-check context the org ruleset
+  requires. The `security` job is a reusable-workflow caller (`uses:`), so
+  its inner jobs, including the callee's own `security-gate` job, only ever
+  emit contexts prefixed with the caller job name (`Security Analysis / ...`).
+  No job in this repository could ever satisfy the bare required context, so
+  it sat as "Expected" forever and every open PR was blocked regardless of
+  how green everything else was.
+
 ### Added
 
 - Release workflow (`release.yml`): Sigstore keyless signing on tagged releases
