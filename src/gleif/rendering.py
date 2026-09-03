@@ -72,12 +72,16 @@ def render_entity_panel(
         f"[bold]Status:[/]        {entity.entity_status}",
         f"[bold]Category:[/]      {entity.entity_category or 'N/A'}",
         f"[bold]Jurisdiction:[/]  {entity.legal_jurisdiction or 'N/A'}",
-        f"[bold]Legal Addr:[/]    "
-        f"{entity.legal_address_city or ''}, "
-        f"{entity.legal_address_country or ''}",
-        f"[bold]HQ Addr:[/]       "
-        f"{entity.hq_address_city or ''}, "
-        f"{entity.hq_address_country or ''}",
+        (
+            f"[bold]Legal Addr:[/]    "
+            f"{entity.legal_address_city or ''}, "
+            f"{entity.legal_address_country or ''}"
+        ),
+        (
+            f"[bold]HQ Addr:[/]       "
+            f"{entity.hq_address_city or ''}, "
+            f"{entity.hq_address_country or ''}"
+        ),
         f"[bold]Reg. Status:[/]   {entity.registration_status}",
     ]
     entity_isins = format_isins(isin_map, entity.lei)
