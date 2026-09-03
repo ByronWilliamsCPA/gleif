@@ -20,6 +20,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- CI: Claude Tier 0 baseline PR review caller
+  (`.github/workflows/claude-baseline-review.yml`), a thin caller of the org
+  reusable in `ByronWilliamsCPA/.github`. Part of the org-wide tiered-pr-review
+  rollout.
 - Release workflow (`release.yml`): Sigstore keyless signing on tagged releases
 - OpenSSF Scorecard workflow (`scorecard.yml`) for continuous supply-chain
   health scoring
