@@ -17,7 +17,7 @@ concurrency:
 jobs:
   scorecard:
     # yamllint disable rule:line-length
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@987d517d3c8e4b180f4dd15de6d9575f0df91182 # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-scorecard.yml@b7c661ec3bfeb04370ce3a9c748bd8c4e93bfe89 # main
     # yamllint enable rule:line-length
     permissions:
       security-events: write
