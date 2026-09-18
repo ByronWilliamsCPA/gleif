@@ -32,7 +32,7 @@ jobs:
   security:
     name: Security Analysis
     # yamllint disable rule:line-length
-    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@987d517d3c8e4b180f4dd15de6d9575f0df91182 # main
+    uses: ByronWilliamsCPA/.github/.github/workflows/python-security-analysis.yml@b7c661ec3bfeb04370ce3a9c748bd8c4e93bfe89 # main
     # yamllint enable rule:line-length
     permissions:
       contents: read
@@ -74,7 +74,7 @@ jobs:
       contents: read
     steps:
       - name: Harden the runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
